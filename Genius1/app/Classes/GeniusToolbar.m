@@ -67,8 +67,9 @@ NSString * GeniusToolbarSearchItemIdentifier = @"Search";
             //NSString * label = NSLocalizedString(@"Auto-Pick", nil);
             //[toolbarItem setLabel:label];
 
-            [toolbarItem setView:[learnReviewSlider superview]];
-            [toolbarItem setMinSize:NSMakeSize(80.0, 32.0)];
+			NSView * itemView = [learnReviewSlider superview];
+            [toolbarItem setView:itemView];
+            [toolbarItem setMinSize:NSMakeSize([itemView frame].size.width, 32.0)];
         }
         else if ([itemIdentifier isEqual:GeniusToolbarInfoItemIdentifier])
         {
@@ -86,7 +87,7 @@ NSString * GeniusToolbarSearchItemIdentifier = @"Search";
             NSString * label = NSLocalizedString(@"Notes", nil);
             [toolbarItem setLabel:label];
             
-            NSImage * image = [NSImage imageNamed:@"txt"];
+            NSImage * image = [NSImage imageNamed:@"Information"];
 //            NSImage * image = [NSImage imageNamed:@"notes"];
             [toolbarItem setImage:image];
     
