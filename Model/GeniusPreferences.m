@@ -1,10 +1,7 @@
+//  Genius
 //
-//  GeniusPreferences.m
-//  Genius2
-//
-//  Created by John R Chang on 2005-10-11.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "GeniusPreferences.h"
 
@@ -16,7 +13,7 @@ NSString * GeniusPreferencesQuizUseFullScreenKey = @"UseFullScreen";
 NSString * GeniusPreferencesQuizUseVisualErrorsKey = @"QuizUseVisualErrors";
 NSString * GeniusPreferencesQuizMatchingModeKey = @"QuizMatchingMode";
 
-//static NSString * GeniusPreferencesQuizLengthModeKey = @"QuizLengthMode";
+NSString * GeniusPreferencesQuizChooseModeKey = @"QuizChooseMode";
 NSString * GeniusPreferencesQuizNumItemsKey = @"QuizNumItems";
 NSString * GeniusPreferencesQuizFixedTimeMinKey = @"QuizFixedTimeMin";
 NSString * GeniusPreferencesQuizReviewLearnFloatKey = @"QuizReviewLearnFloat";

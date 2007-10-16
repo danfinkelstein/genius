@@ -11,48 +11,14 @@
 			<array>
 				<string>genius</string>
 			</array>
-			<key>CFBundleTypeName</key>
-			<string>GeniusV1</string>
-			<key>CFBundleTypeRole</key>
-			<string>Viewer</string>
-			<key>LSTypeIsPackage</key>
-			<false/>
-			<key>NSDocumentClass</key>
-			<string>GeniusDocument</string>
-			<key>NSPersistentStoreTypeKey</key>
-			<string>XML</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>binary</string>
-			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Document</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>application/octet-stream</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>Binary</string>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSTypeIsPackage</key>
-			<false/>
-			<key>NSDocumentClass</key>
 			<string>GeniusDocument</string>
-			<key>NSPersistentStoreTypeKey</key>
-			<string>Binary</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>sql</string>
-			</array>
-			<key>CFBundleTypeMIMETypes</key>
-			<array>
-				<string>application/octet-stream</string>
-			</array>
-			<key>CFBundleTypeName</key>
-			<string>SQL</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSTypeIsPackage</key>
@@ -61,32 +27,6 @@
 			<string>GeniusDocument</string>
 			<key>NSPersistentStoreTypeKey</key>
 			<string>SQLite</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>xml</string>
-			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string></string>
-			<key>CFBundleTypeMIMETypes</key>
-			<array>
-				<string>text/xml</string>
-			</array>
-			<key>CFBundleTypeName</key>
-			<string>XML</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>????</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSTypeIsPackage</key>
-			<false/>
-			<key>NSDocumentClass</key>
-			<string>GeniusDocument</string>
-			<key>NSPersistentStoreTypeKey</key>
-			<string>XML</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -100,11 +40,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.0a1</string>
-	<key>CFBundleSignature</key>
-	<string>jrcG</string>
+	<string>2.0a3</string>
 	<key>CFBundleVersion</key>
-	<string>20051204</string>
+	<string>20060218</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.4</string>
 	<key>NSMainNibFile</key>

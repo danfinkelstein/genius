@@ -1,49 +1,86 @@
-// 
-//  GeniusItem.m
-//  Genius2
+//  Genius
 //
-//  Created by John R Chang on 2005-09-23.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "GeniusItem.h"
 
-// XXX
-#import "GeniusDocument.h"	// -documentInfo
-#import "GeniusDocumentInfo.h"	// -quizDirectionMode
+#import "GeniusAtom.h"
+#import "GeniusAssociation.h"	// GeniusAssociationSourceAtomKey, ...
 
+#import "GeniusDocument.h"		-documentInfo
+#import "GeniusDocumentInfo.h"	-quizDirectionMode
 
-static NSString * GeniusItemAssociationsKey = @"associations";
-NSString * GeniusItemAtomAKey = @"atomA";
-NSString * GeniusItemAtomBKey = @"atomB";
 
 NSString * GeniusItemIsEnabledKey = @"isEnabled";
+NSString * GeniusItemAtomAKey = @"atomA";
+NSString * GeniusItemAtomBKey = @"atomB";
 NSString * GeniusItemMyGroupKey = @"myGroup";
 NSString * GeniusItemMyTypeKey = @"myType";
-NSString * GeniusItemMyNotesKey = @"myNotes";
 NSString * GeniusItemMyRatingKey = @"myRating";
+NSString * GeniusItemDisplayGradeKey = @"displayGrade";
 NSString * GeniusItemLastTestedDateKey = @"lastTestedDate";
 NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
 
+NSString * GeniusItemMyNotesKey = @"myNotes";
 
-@interface GeniusItem (Private)
-- (void) _addSelfAsObserverToChildAtoms;
-- (void) _removeSelfAsObserverToChildAtoms;
+static NSString * GeniusItemAssociationsKey = @"associations";
 
-- (void) _recalculateGrade;
 
+@interface GeniusItem (Internal)
+- (void) touchLastModifiedDate;
 @end
 
 
 @implementation GeniusItem 
 
-- (NSArray *) allAtoms
+- (void)awakeFromInsert
 {
-	return [NSArray arrayWithObjects:[self valueForKey:GeniusItemAtomAKey], [self valueForKey:GeniusItemAtomBKey], nil];
+	[super awakeFromInsert];
+
+	// Create child atoms
+	NSManagedObjectContext * context = [self managedObjectContext];
+
+	GeniusAtom * atomA = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusAtom" inManagedObjectContext:context];	
+	GeniusAtom * atomB = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusAtom" inManagedObjectContext:context];	
+	[self setValue:atomA forKey:GeniusItemAtomAKey];
+	[self setValue:atomB forKey:GeniusItemAtomBKey];
+	[atomA setDelegate:self];
+	[atomB setDelegate:self];
+
+	[self touchLastModifiedDate];
+}
+
+
+- (void)didTurnIntoFault
+{
+	[_associationAB release];
+	_associationAB = nil;
+	[_associationBA release];
+	_associationBA = nil;
+	
+	[super didTurnIntoFault];
+}
+
+
+#pragma mark Atoms / Last modified date
+
+- (NSArray *) _atoms
+{
+	return [NSArray arrayWithObjects:
+		[self valueForKey:GeniusItemAtomAKey],
+		[self valueForKey:GeniusItemAtomBKey],
+		nil];
+}
+
+- (void) touchLastModifiedDate
+{
+	[self setValue:[NSDate date] forKey:GeniusItemLastModifiedDateKey];
 }
 
 
 #pragma mark <NSCopying>
+
 /*
 	/Developer/ADC Reference Library/documentation/Cocoa/Conceptual/CoreData/Articles/cdUsingMOs.html
 	"In many cases the best strategy may be in copy to create a dictionary (property list) representation
@@ -54,8 +91,8 @@ NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
     static NSArray *copyKeys = nil;
     if (copyKeys == nil) {
         copyKeys = [[NSArray alloc] initWithObjects:
+			//GeniusItemAtomsKey, GeniusItemAssociationsKey,
 			GeniusItemAtomAKey, GeniusItemAtomBKey,
-            @"associations",
 			GeniusItemIsEnabledKey, GeniusItemLastModifiedDateKey,
 			GeniusItemMyGroupKey, GeniusItemMyTypeKey, GeniusItemMyNotesKey, GeniusItemMyRatingKey, nil];
     }
@@ -75,21 +112,17 @@ NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
 	// Create new item
 	GeniusItem * newObject = [[[self class] allocWithZone:zone] initWithEntity:[self entity] insertIntoManagedObjectContext:context];
 
-	// Unsubscribe
-	[newObject _removeSelfAsObserverToChildAtoms];
-
 	// Fill in data
 	[newObject setValuesForKeysWithDictionary:[self dictionaryRepresentation]];
 	
 	// Use old atoms
 	GeniusAtom * newAtomA = [[[self valueForKey:GeniusItemAtomAKey] copy] autorelease];
 	[newObject setValue:newAtomA forKey:GeniusItemAtomAKey];
+	[newAtomA setDelegate:newObject];
 
 	GeniusAtom * newAtomB = [[[self valueForKey:GeniusItemAtomBKey] copy] autorelease];
 	[newObject setValue:newAtomB forKey:GeniusItemAtomBKey];
-
-	// Subscribe
-	[newObject _addSelfAsObserverToChildAtoms];
+	[newAtomB setDelegate:newObject];
 
 	[newObject touchLastModifiedDate];
 
@@ -99,121 +132,111 @@ NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
 
 #pragma mark -
 
-- (void) _addSelfAsObserverToChildAtoms
+- (BOOL) usesDefaultTextAttributes
 {
-	NSArray * allAtoms = [self allAtoms];
-	NSEnumerator * atomEnumerator = [allAtoms objectEnumerator];
-	NSManagedObject * atom;
+	NSArray * atoms = [self _atoms]; //valueForKey:GeniusItemAtomsKey];
+	NSEnumerator * atomEnumerator = [atoms objectEnumerator];
+	GeniusAtom * atom;
 	while ((atom = [atomEnumerator nextObject]))
-	{
-		[atom addObserver:self forKeyPath:GeniusAtomDirtyKey options:0 context:NULL];
-	}
+		if ([atom usesDefaultTextAttributes] == NO)
+			return NO;
+	return YES;
 }
 
-- (void) _removeSelfAsObserverToChildAtoms
+- (void) clearTextAttributes
 {
-	NSArray * allAtoms = [self allAtoms];
-	NSEnumerator * atomEnumerator = [allAtoms objectEnumerator];
-	NSManagedObject * atom;
-	while ((atom = [atomEnumerator nextObject]))
-		[atom removeObserver:self forKeyPath:GeniusAtomDirtyKey];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-	if ([keyPath isEqualToString:GeniusAtomDirtyKey])
-	{
-		[self touchLastModifiedDate];
-	}
+	NSArray * atoms = [self _atoms]; //valueForKey:GeniusItemAtomsKey];
+	[atoms makeObjectsPerformSelector:@selector(clearTextAttributes)];
 }
 
 
 #pragma mark -
 
-- (void) commonAwake
+- (void) swapAtoms
 {
-	[self _addSelfAsObserverToChildAtoms];
+	GeniusAtom * atomA = [[self valueForKey:GeniusItemAtomAKey] retain];
+	GeniusAtom * atomB = [[self valueForKey:GeniusItemAtomBKey] retain];
+	[self setValue:atomB forKey:GeniusItemAtomAKey];
+	[self setValue:atomA forKey:GeniusItemAtomBKey];
+	[atomA release];
+	[atomB release];
 
-//	[self flushCache];
+	[self touchLastModifiedDate];
+	
+	[_associationAB release];
+	_associationAB = nil;
+	[_associationBA release];
+	_associationBA = nil;
 }
 
-- (void)awakeFromInsert
+@end
+
+
+@implementation GeniusItem (ScoreKeeping)
+
+- (GeniusAssociation *) _associationWithSourceAtom:(GeniusAtom *)sourceAtom targetAtom:(GeniusAtom *)targetAtom
 {
-	[super awakeFromInsert];
-
-	NSManagedObjectContext * context = [self managedObjectContext];
-
-	// Create child atoms
-	GeniusAtom * atomA = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusAtom" inManagedObjectContext:context];	
-	GeniusAtom * atomB = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusAtom" inManagedObjectContext:context];	
-
-	// Link new atoms to self
-	[self setPrimitiveValue:atomA forKey:GeniusItemAtomAKey];
-	[self setPrimitiveValue:atomB forKey:GeniusItemAtomBKey];
-
-	// Create child associations
-	NSManagedObject * assocAB = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusAssociation" inManagedObjectContext:context];
-	[assocAB setPrimitiveValue:atomA forKey:GeniusAssociationSourceAtomKey];
-	[assocAB setPrimitiveValue:atomB forKey:GeniusAssociationTargetAtomKey];
-
-	NSManagedObject * assocBA = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusAssociation" inManagedObjectContext:context];
-	[assocBA setPrimitiveValue:atomB forKey:GeniusAssociationSourceAtomKey];
-	[assocBA setPrimitiveValue:atomA forKey:GeniusAssociationTargetAtomKey];
-
-	// Link new associations to self
-	NSMutableSet * associationSet = [self mutableSetValueForKey:GeniusItemAssociationsKey];	// persistent
-	[associationSet addObject:assocAB];
-	[associationSet addObject:assocBA];
-
-	// Initialize lastModifiedDate
-	[self setPrimitiveValue:[NSDate date] forKey:GeniusItemLastModifiedDateKey];
-
-	[self commonAwake];
-}
-
-- (void)awakeFromFetch
-{
-	[super awakeFromFetch];
-
-	[self flushCache];
-
-	[self commonAwake];
-}
-
-
-#pragma mark -
-
-- (GeniusAssociation *) _associationForSourceAtom:(GeniusAtom *)sourceAtom targetAtom:(GeniusAtom *)targetAtom
-{
-	// is NSFetchRequest faster?
-
-	NSSet * associationSet = [self valueForKey:GeniusItemAssociationsKey];
-	NSEnumerator * associationSetEnumerator = [associationSet objectEnumerator];
+	NSMutableSet * associationSet = [self valueForKey:GeniusItemAssociationsKey];
+	NSEnumerator * associationEnumerator = [associationSet objectEnumerator];
 	GeniusAssociation * association;
-	while ((association = [associationSetEnumerator nextObject]))
+	while ((association = [associationEnumerator nextObject]))
 	{
 		GeniusAtom * aSourceAtom = [association valueForKey:GeniusAssociationSourceAtomKey];
 		GeniusAtom * aTargetAtom = [association valueForKey:GeniusAssociationTargetAtomKey];
 		if ([aSourceAtom isEqual:sourceAtom] && [aTargetAtom isEqual:targetAtom])
 			return association;
 	}
-	return nil;
+	
+	NSManagedObjectContext * context = [self managedObjectContext];
+	association = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusAssociation" inManagedObjectContext:context];
+	[association setValue:self forKey:GeniusAssociationParentItemKey];
+	[association setValue:sourceAtom forKey:GeniusAssociationSourceAtomKey];
+	[association setValue:targetAtom forKey:GeniusAssociationTargetAtomKey];
+	[associationSet addObject:association];
+	return association;
 }
 
 - (GeniusAssociation *) associationAB
 {
-	GeniusAtom * atomA = [self valueForKey:GeniusItemAtomAKey];
-	GeniusAtom * atomB = [self valueForKey:GeniusItemAtomBKey];
-	return [self _associationForSourceAtom:atomA targetAtom:atomB];
+	if (_associationAB == nil)
+	{
+		GeniusAtom * atomA = [self valueForKey:GeniusItemAtomAKey];
+		GeniusAtom * atomB = [self valueForKey:GeniusItemAtomBKey];
+		_associationAB = [[self _associationWithSourceAtom:atomA targetAtom:atomB] retain];
+	}
+	return _associationAB;
 }
 
 - (GeniusAssociation *) associationBA
 {
-	GeniusAtom * atomA = [self valueForKey:GeniusItemAtomAKey];
-	GeniusAtom * atomB = [self valueForKey:GeniusItemAtomBKey];
-	return [self _associationForSourceAtom:atomB targetAtom:atomA];
+	if (_associationBA == nil)
+	{
+		GeniusAtom * atomA = [self valueForKey:GeniusItemAtomAKey];
+		GeniusAtom * atomB = [self valueForKey:GeniusItemAtomBKey];
+		_associationBA = [[self _associationWithSourceAtom:atomB targetAtom:atomA] retain];
+	}
+	return _associationBA;
 }
 
+- (void) resetAssociations
+{
+	NSMutableSet * associationSet = [self valueForKey:GeniusItemAssociationsKey];
+	[associationSet makeObjectsPerformSelector:@selector(reset)];
+}
+
+- (BOOL) isAssociationsReset
+{
+	NSMutableSet * associationSet = [self valueForKey:GeniusItemAssociationsKey];
+	NSEnumerator * associationEnumerator = [associationSet objectEnumerator];
+	GeniusAssociation * association;
+	while ((association = [associationEnumerator nextObject]))
+		if ([association isReset] == NO)
+			return NO;
+	return YES;
+}
+
+
+#pragma mark -
 
 - (NSArray *) _activeAssociations
 {	
@@ -229,44 +252,17 @@ NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
 	}
 }
 
-
-- (void) touchLastModifiedDate
-{
-	[self setPrimitiveValue:[NSDate date] forKey:GeniusItemLastModifiedDateKey];
-}
-
-- (void) touchLastTestedDate
-{
-	NSDate * lastTestedDate = nil;
-	
-	NSArray * activeAssociations = [self _activeAssociations];
-	NSEnumerator * associationEnumerator = [activeAssociations objectEnumerator];
-	GeniusAssociation * association;
-	while ((association = [associationEnumerator nextObject]))
-	{
-		NSDate * assocDate = [association valueForKey:GeniusAssociationLastDataPointDateKey];
-		lastTestedDate = (lastTestedDate ? [lastTestedDate laterDate:assocDate] : assocDate);
-	}
-
-	[self setPrimitiveValue:lastTestedDate forKey:GeniusItemLastTestedDateKey];
-
-		[self _recalculateGrade];
-		[self flushCache];
-}
-
-
-- (void) _recalculateGrade
+- (float) grade
 {
 	float sum = 0.0;
-	
 	NSArray * activeAssociations = [self _activeAssociations];	
 	NSEnumerator * associationEnumerator = [activeAssociations objectEnumerator];
 	GeniusAssociation * association;
 	while ((association = [associationEnumerator nextObject]))
 	{
-		float predictedScore = [[association valueForKey:GeniusAssociationPredictedScoreKey] floatValue];
-		if (predictedScore != -1.0)
-			sum += predictedScore;
+		float predictedValue = [association predictedValue]; // valueForKey:GeniusAssociationPredictedScoreKey] floatValue];
+		if (predictedValue != -1.0)
+			sum += predictedValue;
 	}
 	
 	float grade;
@@ -274,74 +270,53 @@ NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
 		grade = -1.0;
 	else
 		grade = sum / [activeAssociations count];
-		
-	[self setPrimitiveValue:[NSNumber numberWithFloat:grade] forKey:@"grade"];
+
+	return grade;
 }
 
 - (NSString *) displayGrade
 {
-	if (_displayGrade == nil)
-	{
-		float grade = [[self valueForKey:@"grade"] floatValue];
-		if (grade == -1.0)
-			_displayGrade = @"";
-		else if (grade > 0.9)
-			_displayGrade = @"A";
-		else if (grade > 0.8)
-			_displayGrade = @"B";
-		else if (grade > 0.7)
-			_displayGrade = @"C";
-		else if (grade > 0.6)
-			_displayGrade = @"D";
-		else
-			_displayGrade = @"F";
-//			[[NSString alloc] initWithFormat:@"%.0f", grade * 100.0];
-	}
-	return (_displayGrade == @"" ? nil : _displayGrade);
+	float grade = [self grade];
+
+	NSString * displayGrade = nil;
+	if (grade == -1.0)
+		displayGrade = @"--";
+	else if (grade > 0.9)
+		displayGrade = @"A";
+	else if (grade > 0.8)
+		displayGrade = @"B";
+	else if (grade > 0.7)
+		displayGrade = @"C";
+	else if (grade > 0.6)
+		displayGrade = @"D";
+	else
+		displayGrade = @"F";
+		
+	return displayGrade;
 }
 
-
-- (void) swapAtoms
+- (NSImage *) gradeIcon
 {
-	GeniusAtom * atomA = [self valueForKey:GeniusItemAtomAKey];
-	GeniusAtom * atomB = [self valueForKey:GeniusItemAtomBKey];
+	float grade = [self grade];
 
-	[self setValue:atomB forKey:GeniusItemAtomAKey];
-	[self setValue:atomA forKey:GeniusItemAtomBKey];
+	NSImage * image = nil;
+	if (grade == -1.0)
+		image = [NSImage imageNamed:@"status-red"];
+	else if (grade < 0.9)
+		image = [NSImage imageNamed:@"status-yellow"];
+	else
+		image = [NSImage imageNamed:@"status-green"];
+	return image;
+}
 
+@end
+
+
+@implementation GeniusItem (GeniusAtomDelegate)
+
+- (void) atomHasChanged:(GeniusAtom *)atom
+{
 	[self touchLastModifiedDate];
-}
-
-- (BOOL) usesDefaultTextAttributes
-{
-	NSArray * allAtoms = [self allAtoms];
-	NSEnumerator * atomEnumerator = [allAtoms objectEnumerator];
-	GeniusAtom * atom;
-	while ((atom = [atomEnumerator nextObject]))
-		if ([atom usesDefaultTextAttributes] == NO)
-			return NO;
-	return YES;
-}
-
-- (void) clearTextAttributes
-{
-	NSArray * allAtoms = [self allAtoms];
-	[allAtoms makeObjectsPerformSelector:@selector(clearTextAttributes)];
-}
-
-- (void) resetAssociations
-{
-	NSSet * associationSet = [self valueForKey:GeniusItemAssociationsKey];
-	[associationSet makeObjectsPerformSelector:@selector(reset)];
-}
-
-
-- (void) flushCache
-{
-	//NSLog(@"flushCache");
-	
-	//[_displayGrade release];
-	_displayGrade = nil;
 }
 
 @end
@@ -349,9 +324,18 @@ NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
 
 @implementation GeniusItem (TextImportExport)
 
++ (NSArray *) keyPathOrderForTextRepresentation
+{
+	return [NSArray arrayWithObjects:@"atomA.string", @"atomB.string",
+		GeniusItemMyGroupKey, GeniusItemMyTypeKey, GeniusItemMyRatingKey,
+		@"associationAB.predictedValue", @"associationBA.predictedValue",
+		GeniusItemLastTestedDateKey, GeniusItemLastModifiedDateKey, GeniusItemMyNotesKey, nil];
+}
+
+
 - (NSString *) tabularText
 {
-	NSArray * keyPaths = [NSArray arrayWithObjects:@"atomA.string", @"atomB.string", nil];
+	NSArray * keyPaths = [GeniusItem keyPathOrderForTextRepresentation];
 
     NSMutableString * outputString = [NSMutableString string];
     int i, count = [keyPaths count];
@@ -386,4 +370,79 @@ NSString * GeniusItemLastModifiedDateKey = @"lastModifiedDate";
     return outputString;
 }
 
+
++ (NSArray *) _linesFromString:(NSString *)string
+{
+    NSMutableArray * lines = [NSMutableArray array];
+    unsigned int startIndex, lineEndIndex, contentsEndIndex = 0;
+    unsigned int length = [string length];
+    NSRange range = NSMakeRange(0, 0);
+    while (contentsEndIndex < length)
+    {
+        [string getLineStart:&startIndex end:&lineEndIndex contentsEnd:&contentsEndIndex forRange:range];
+        unsigned int rangeLength = contentsEndIndex - startIndex;
+        if (rangeLength > 0)    // don't include empty lines
+        {
+            NSString * line = [string substringWithRange:NSMakeRange(startIndex, rangeLength)];
+            [lines addObject:line];
+        }
+        range.location = lineEndIndex;
+    }
+    return lines;
+}
+
++ (NSArray *) itemsFromTabularText:(NSString *)string order:(NSArray *)keyPaths
+{
+    //Can't use lines = [string componentsSeparatedByString:@"\n"];
+    // because it doesn't handle carriage returns.
+    NSArray * lines = [self _linesFromString:string];
+
+    NSMutableArray * items = [NSMutableArray array];
+    NSEnumerator * lineEnumerator = [lines objectEnumerator];
+    NSString * line;
+    while ((line = [lineEnumerator nextObject]))
+    {
+        GeniusItem * item = [[GeniusItem alloc] initWithTabularText:line order:keyPaths];
+        [items addObject:item];
+        [item release];
+    }
+    return (NSArray *)items;	
+}
+
+- (id) initWithTabularText:(NSString *)line order:(NSArray *)keyPaths
+{
+    NSDocumentController * dc = [NSDocumentController sharedDocumentController];
+    GeniusDocument * document = (GeniusDocument *)[dc currentDocument];
+	
+	NSManagedObjectContext * context = [document managedObjectContext];
+	self = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusItem" inManagedObjectContext:context];
+
+    NSArray * fields = [line componentsSeparatedByString:@"\t"];
+    int i, count=MIN([fields count], [keyPaths count]);
+    for (i=0; i<count; i++)
+    {
+        NSString * field = [fields objectAtIndex:i];
+        NSString * keyPath = [keyPaths objectAtIndex:i];
+
+        // Unescape any embedded special characters
+        NSMutableString * decodedString = [NSMutableString stringWithString:field];
+        [decodedString replaceOccurrencesOfString:@"\\t" withString:@"\t" options:NSLiteralSearch range:NSMakeRange(0, [decodedString length])];
+        [decodedString replaceOccurrencesOfString:@"\\n" withString:@"\n" options:NSLiteralSearch range:NSMakeRange(0, [decodedString length])];
+
+		if ([keyPath isEqual:GeniusItemMyRatingKey])
+			[self setValue:[NSNumber numberWithInt:[decodedString intValue]] forKeyPath:keyPath];
+		else if ([keyPath isEqual:@"associationAB.predictedValue"] || [keyPath isEqual:@"associationBA.predictedValue"])
+			; // XXX: do nothing
+		else if ([keyPath isEqual:GeniusItemLastTestedDateKey] || [keyPath isEqual:GeniusItemLastModifiedDateKey])
+			[self setValue:[NSDate dateWithString:decodedString] forKeyPath:keyPath];
+		else
+			[self setValue:decodedString forKeyPath:keyPath];
+    }
+    
+    return self;	
+}
+
 @end
+
+
+NSString * GeniusItemScoreHasChangedNotification = @"GeniusItemScoreHasChangedNotification";

@@ -1,10 +1,7 @@
-//
-//  GeniusV1FileImporter.m
 //  Genius
 //
-//  Created by John R Chang on Fri Nov 14 2003.
-//  Copyright (c) 2003 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "GeniusV1FileImporter.h"
 #import "GeniusV1Pair.h"
@@ -16,6 +13,8 @@
 #import "GeniusAssociation.h"
 #import "GeniusAssociationDataPoint.h"
 
+#import "GeniusPreferences.h"
+
 
 @implementation GeniusDocument (GeniusV1FileImporter)
 
@@ -24,25 +23,27 @@
 	NSNumber * scoreNumber = [oldV1Assoc scoreNumber];
 	if (scoreNumber)
 	{
-		unsigned int score = [scoreNumber unsignedIntValue];
+/*		unsigned int score = [scoreNumber unsignedIntValue];
 
 		// Make up a fake set of data points from the single "score" value of Genius 1.x		
 		NSMutableArray * dataPoints = [NSMutableArray array];
 
 		int n = score; // MAX(18, score);
-		NSDate * firstDate = [[NSDate date] addTimeInterval:-[GeniusAssociationDataPoint timeIntervalForScore:n-1] - 60*60*24*7*8];
+		NSDate * firstDate = [[NSDate date] addTimeInterval:-[GeniusAssociationDataPoint timeIntervalForCount:n-1] - 60*60*24*7*8];
 		int i;
 		for (i=0; i<n; i++)
 		{
 			// Create new data point
-			NSDate * date = [firstDate addTimeInterval:[GeniusAssociationDataPoint timeIntervalForScore:i]];
+			NSDate * date = [firstDate addTimeInterval:[GeniusAssociationDataPoint timeIntervalForCount:i]];
 			GeniusAssociationDataPoint * dataPoint = [[GeniusAssociationDataPoint alloc] initWithDate:date value:(float)YES];
 			[dataPoints addObject:dataPoint];
 			[dataPoint release];
 		}
 
 		NSData * data = [NSArchiver archivedDataWithRootObject:dataPoints];
-		[association setValue:data forKey:GeniusAssociationDataPointArrayDataKey];
+		[association setValue:data forKey:GeniusAssociationDataPointArrayDataKey];*/
+		
+		[association setValue:scoreNumber forKey:GeniusAssociationHandicapKey];
 	}
 
 	NSDate * dueDate = [oldV1Assoc dueDate];
@@ -126,7 +127,7 @@
 }
 
 
-- (BOOL) importGeniusV1FileFromURL:(NSURL *)aURL
+- (BOOL) importGeniusV1_5FileAtURL:(NSURL *)aURL
 {
 	NSData * data = [NSData dataWithContentsOfURL:aURL];
 	if (data == nil)
@@ -161,8 +162,6 @@
 
 		// Document Header
 		//NSLog(@"Importing Genius 1.x data file");
-		// XXX: TO DO
-#warning Need to import Genius 1.x document metadata
 /*        NSArray * visibleColumnIdentifiers = [unarchiver decodeObjectForKey:@"visibleColumnIdentifiers"];
         if (visibleColumnIdentifiers)
 			; //
@@ -173,7 +172,10 @@
 
 /*        NSNumber * learnVsReviewNumber = [unarchiver decodeObjectForKey:@"learnVsReviewNumber"];
         if (learnVsReviewNumber)
-            [notebook setValue:learnVsReviewNumber forKey:@"learnVsReviewFloat"];*/
+		{
+			NSUserDefaults * ud = [NSUserDefaults standardUserDefaults];
+			[ud setObject:learnVsReviewNumber forKey:GeniusPreferencesQuizReviewLearnFloatKey];
+		}*/
 
 		// Document Body
 		NSArray * pairs = [unarchiver decodeObjectForKey:@"pairs"];	// GeniusV1Pair objects

@@ -1,19 +1,22 @@
+//  Genius
 //
-//  GeniusWindowController.h
-//  Genius2
-//
-//  Created by John R Chang on 2005-10-14.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import <Cocoa/Cocoa.h>
 
 
+@class KFSplitView, GeniusTableView;
+
 @interface GeniusWindowController : NSWindowController {
 	NSSearchField * _searchField;
+	KFSplitView * _splitView;
+	GeniusTableView * _tableView;
+	NSLevelIndicator * _levelIndicator;
+	NSMenu * _defaultColumnsMenu;	// only used when window is inactive
 }
 
-- (void) setupTableView:(NSTableView *)tableView withHeaderViewMenu:(NSMenu *)headerViewMenu;
+- (void) setupTableView:(NSTableView *)tableView;
 - (void) setupSplitView:(NSSplitView *)splitView;
 - (void) setupAtomTextView:(NSTextView *)textView;
 - (void) bindTextView:(NSTextView *)textView toController:(id)observableController withKeyPath:(NSString *)keyPath;
@@ -24,10 +27,18 @@
 @end
 
 
+@interface NSObject (NSWindowControllerEventForwarding)
+- (BOOL)performKeyDown:(NSEvent *)theEvent;
+@end
+
+
 @interface GeniusWindowController (Actions)
 
 // Edit menu
 - (IBAction) selectSearchField:(id)sender;
+
+// View menu
+- (IBAction) showRichTextEditor:(id)sender;
 
 // Item menu
 - (IBAction) toggleInspector:(id)sender;

@@ -1,10 +1,7 @@
+//  Genius
 //
-//  GeniusAssociationDataPoint.h
-//  Genius2
-//
-//  Created by John R Chang on 2005-10-15.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import <Foundation/Foundation.h>
 
@@ -17,15 +14,15 @@
 - (id) initWithDate:(NSDate *)date value:(float)value;
 
 - (NSDate *) date;
-- (float) value;
+- (BOOL) value;
 
 @end
 
 
 @interface GeniusAssociationDataPoint (GradePrediction)
 
-+ (float) predictedGradeWithDataPoints:(NSArray *)dataPoints;
++ (float) predictedValueWithDataPoints:(NSArray *)dataPoints;
 
-+ (NSTimeInterval) timeIntervalForScore:(unsigned int)score;	// XXX: used by GeniusAssociationEnumerator
++ (NSTimeInterval) timeIntervalForCount:(unsigned int)count;	// XXX: used by GeniusAssociationEnumerator
 
 @end

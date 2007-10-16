@@ -1,38 +1,48 @@
+//  Genius
 //
-//  GeniusAssociation.h
-//  Genius2
-//
-//  Created by John R Chang on 2005-09-24.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import <CoreData/CoreData.h>
 
-#import "GeniusAtom.h"
 
-
-extern NSString * GeniusAssociationLastDataPointDateKey;
 extern NSString * GeniusAssociationDueDateKey;
-extern NSString * GeniusAssociationPredictedScoreKey;
+extern NSString * GeniusAssociationDataPointArrayDataKey;
+
+extern NSString * GeniusAssociationPredictedValueKey;
 
 
-/*
-	A directed association between two atoms, with score-keeping data.
-	Like an axon between two neurons.
-*/
-@interface GeniusAssociation :  NSManagedObject <NSCopying>
-{
-	NSArray * _dataPoints;
-}
+@class GeniusAtom;
+
+@interface GeniusAssociation :  NSManagedObject
 
 // for QuizController
 - (GeniusAtom *) sourceAtom;
 - (GeniusAtom *) targetAtom;
 
-- (BOOL) lastDataPointValue;		// XXX: used only by GeniusAssociationEnumerator
-- (unsigned int) resultCount;
+@end
+
+
+@class GeniusAssociationDataPoint;
+
+@interface GeniusAssociation (Results)
+
+// used by inspector nib
+- (NSArray *) dataPoints;
+- (void) setDataPoints:(NSArray *)dataPoints;
+
+// used by document nib
+- (unsigned int) correctCount;
+- (void) setCorrectCount:(NSNumber *)countNumber;
+
 
 - (void) addResult:(BOOL)value;
+
+- (float) predictedValue;
+
+// XXX: used only by GeniusAssociationEnumerator
+- (unsigned int) resultCount;
+- (GeniusAssociationDataPoint *) lastDataPoint;
 
 - (void) reset;
 - (BOOL) isReset;
@@ -40,9 +50,10 @@ extern NSString * GeniusAssociationPredictedScoreKey;
 @end
 
 
-// exported only for GeniusItem
+// for GeniusItem
+extern NSString * GeniusAssociationParentItemKey;
 extern NSString * GeniusAssociationSourceAtomKey;
 extern NSString * GeniusAssociationTargetAtomKey;
 
-// exported only for GeniusV1FileImporter
-extern NSString * GeniusAssociationDataPointArrayDataKey;
+// for GeniusV1FileImporter
+extern NSString * GeniusAssociationHandicapKey;

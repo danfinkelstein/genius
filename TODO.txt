@@ -1,38 +1,39 @@
 P1:
-genius file extension
-grading / hook up level indicator
-info button
 quiz handling of blank strings / lex similarity return only
-hook up text import
-timer feature
-hook up View -> Sort By menu
-
-toolbar prefs etc
-check for leaks
+document dirty bit for document info
+drop the new scoring system
 
 P2:
-BUG: reveal rich text first resize
-fix up export
-end editing doesn't refresh textview
-polish column behavior
-LastOpenFiles
-ER: up down arrows
+level indicator doesnt draw
+remember table view columns
 
 P3:
-ER: new first item
-ER: option-drag copies
-keyboard nav
-window and table position autosaving
-formatting error on quiz options
 
-P4:
-BUG: get rid of search field pop-up
-BUG: cursor around "Learn More..."
+
+// PUNT
+examples
+check for leaks
+performance
+
+ER: new first item
+drag and drop to text
+level indicator is clickable
+improve text import
+BUG: get rid of search field pop-up menu	*?
+swap columns crashes
+drop image on item
+ER: option-drag copies
+window and table position autosaving
+ER: up/down arrows
+keyboard nav
+View -> Sort By menu						*?
+"formatting error" if empty
 
 
 // version 3.0
 iTunes-style all-in-one window
 tri-directional
+Spotlight support
 printing
 export to iPod
 file sharing

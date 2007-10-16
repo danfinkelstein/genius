@@ -1,17 +1,15 @@
+//  Genius
 //
-//  QuizController.m
-//  Genius2
-//
-//  Created by John R Chang on 2005-10-10.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "QuizController.h"
 
+#import "GeniusAtom.h"
 #import "GeniusAssociationEnumerator.h"
 #import "QuizOptionsController.h"
 
-#import "NSStringSimiliarity.h"
+#import "NSString+Similiarity.h"
 #import "VisualStringDiff.h"
 
 #import "GeniusPreferences.h"
@@ -77,7 +75,7 @@ enum {
 		NSString * informativeString = NSLocalizedString(@"Make sure the items you want to study are filled in and enabled, or add more items.", nil);
 
 		NSAlert * alert = [NSAlert alertWithMessageText:messageString defaultButton:nil alternateButton:nil otherButton:nil informativeTextWithFormat:informativeString];
-		[alert beginSheetModalForWindow:[document mainWindow] modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
+		[alert beginSheetModalForWindow:[document window] modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
 		return nil;
 	}
 
@@ -91,13 +89,19 @@ enum {
 	// Setup quiz options
 	NSUserDefaults * ud = [NSUserDefaults standardUserDefaults];
 
-	int requestedNumItems = [ud integerForKey:GeniusPreferencesQuizNumItemsKey];
-	if (requestedNumItems > 0)
+	int chooseMode = [ud integerForKey:GeniusPreferencesQuizChooseModeKey];
+	if (chooseMode == GeniusPreferencesQuizNumItemsChooseMode)
+	{
+		int requestedNumItems = [ud integerForKey:GeniusPreferencesQuizNumItemsKey];
 		[model setCount:requestedNumItems];
-
-	int fixedTimeMinutes = [ud integerForKey:GeniusPreferencesQuizFixedTimeMinKey];
-	if (fixedTimeMinutes > 0)
+	}
+	else if (chooseMode == GeniusPreferencesQuizFixedTimeChooseMode)
+	{
+		int fixedTimeMinutes = [ud integerForKey:GeniusPreferencesQuizFixedTimeMinKey];
 		_quizUntilDate = [NSDate dateWithTimeIntervalSinceNow:(60 * fixedTimeMinutes)];
+
+		[model setCount:0];
+	}
 
 	float reviewLearnFloat = [ud floatForKey:GeniusPreferencesQuizReviewLearnFloatKey];
 	[model setReviewLearnFloat:reviewLearnFloat];

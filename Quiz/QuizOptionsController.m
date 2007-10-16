@@ -1,10 +1,7 @@
+//  Genius
 //
-//  QuizOptionsController.m
-//  Genius2
-//
-//  Created by John R Chang on 2005-11-23.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "QuizOptionsController.h"
 
@@ -62,8 +59,9 @@
 
 - (IBAction)didChangeQuizModeRadioMatrix:(id)sender
 {
-	// Begin editing in corresponding text field
 	NSTextField * textField = [self _radioMatrixCorrespondingTextField];
+	
+	// Begin editing in corresponding text field
 	[[self window] makeFirstResponder:textField];
 	[textField selectText:self];
 }
@@ -89,5 +87,3 @@
 }
 
 @end
-
-

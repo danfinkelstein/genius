@@ -1,4 +1,7 @@
-/* GeniusDocument */
+//  Genius
+//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import <Cocoa/Cocoa.h>
 
@@ -7,25 +10,27 @@
 @interface GeniusDocument : NSPersistentDocument
 {
     IBOutlet id itemArrayController;
-    IBOutlet id documentInfoController;
 
     IBOutlet id levelIndicator;
     IBOutlet id searchField;
     IBOutlet id tableView;
-    IBOutlet id tableColumnMenu;
     IBOutlet id splitView;
 	
     IBOutlet id atomATextView;
     IBOutlet id atomBTextView;
 	
+	GeniusDocumentInfo * _documentInfo;
+	
 	NSArray * _itemsDuringDrag;
 }
 
-- (NSWindow *) mainWindow;
+- (NSWindow *) window;
 
 - (NSArrayController *) itemArrayController;
 
 - (GeniusDocumentInfo *) documentInfo;	// used by GeniusDocument.nib and QuizModel
+
+- (float) overallPercent;	// 0-100.0
 
 @end
 
@@ -38,9 +43,6 @@
 // Edit menu
 - (IBAction) delete:(id)sender;
 - (IBAction) duplicate:(id)sender;
-
-// View menu
-- (IBAction) showRichTextEditor:(id)sender;
 
 // Item menu
 - (IBAction) newItem:(id)sender;

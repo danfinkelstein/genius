@@ -1,10 +1,7 @@
+//  Genius
 //
-//  QuizModel.m
-//  Genius2
-//
-//  Created by John R Chang on 2005-10-09.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "QuizModel.h"
 
@@ -51,13 +48,17 @@ const kQuizModelDefaultRequestedCount = 10;
 		NSMutableArray * fragments = [NSMutableArray arrayWithObject:@"(parentItem.isEnabled == YES)"]; // AND (parentItem.atomA.string != NIL) AND (parentItem.atomB.string != NIL)"];
 
 		int quizDirectionMode = [[_document documentInfo] quizDirectionMode];
-		if (quizDirectionMode == GeniusQuizUnidirectionalMode)
+/*		if (quizDirectionMode == GeniusQuizUnidirectionalMode)
 			[fragments addObject:@"(sourceAtomKey == \"atomA\" AND targetAtomKey == \"atomB\")"];
 		else
-			[fragments addObject:@"((sourceAtomKey == \"atomA\" AND targetAtomKey == \"atomB\") OR (sourceAtomKey == \"atomB\" AND targetAtomKey == \"atomA\"))"];
+			[fragments addObject:@"((sourceAtomKey == \"atomA\" AND targetAtomKey == \"atomB\") OR (sourceAtomKey == \"atomB\" AND targetAtomKey == \"atomA\"))"];*/
+		if (quizDirectionMode == GeniusQuizUnidirectionalMode)
+			[fragments addObject:@"(sourceAtom == parentItem.atomA AND targetAtom == parentItem.atomB)"];
+		else
+			[fragments addObject:@"((sourceAtom == parentItem.atomA AND targetAtom == parentItem.atomB) OR (sourceAtom == parentItem.atomB AND targetAtom == parentItem.atomA))"];
 
-		if (_requestedMinScore != 1.0)
-			[fragments addObject:[NSString stringWithFormat:@"(predictedScore >= %f)", _requestedMinScore]];
+		if (_requestedMinScore != -1.0)
+			[fragments addObject:[NSString stringWithFormat:@"(predictedValue >= %f)", _requestedMinScore]];
 		
 		NSMutableString * query = [NSMutableString string];
 		int i, count = [fragments count];
@@ -154,8 +155,8 @@ static float PoissonValue(int x, float m)
 {
     #if DEBUG
 		// Calculate minimum and maximum scores        
-		float minScore = [[associations valueForKeyPath:@"@min.predictedScore"] floatValue];
-		float maxScore = [[associations valueForKeyPath:@"@max.predictedScore"] floatValue];		
+		float minScore = [[associations valueForKeyPath:@"@min.predictedValue"] floatValue];
+		float maxScore = [[associations valueForKeyPath:@"@max.predictedValue"] floatValue];		
         NSLog(@"minScore=%f, maxScore=%f", minScore, maxScore);
 	NSLog(@"[associations count]=%d, _requestedCount=%d", [associations count], _requestedCount);
     #endif
@@ -175,9 +176,9 @@ static float PoissonValue(int x, float m)
     GeniusAssociation * association;
     while ((association = [associationEnumerator nextObject]))
     {
-		float predictedScore = [[association valueForKey:GeniusAssociationPredictedScoreKey] floatValue];
-        b = predictedScore * 10.0;
-		if (predictedScore == -1.0)
+		float predictedValue = [association predictedValue]; // valueForKey:GeniusAssociationPredictedScoreKey] floatValue];
+        b = predictedValue * 10.0;
+		if (predictedValue == -1.0)
 			b = 0;
 		
         NSMutableArray * bucket = [buckets objectAtIndex:b];
@@ -267,10 +268,6 @@ static float PoissonValue(int x, float m)
 }
 
 
-- (void) foo
-{
-        // If the fire date has already expired, clear it
 #warning If the fire date has already expired, clear it
-}
 
 @end
