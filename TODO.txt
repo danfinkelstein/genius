@@ -1,0 +1,41 @@
+P1:
+quiz handling of blank strings / lex similarity return only
+document dirty bit for document info
+drop the new scoring system
+
+P2:
+level indicator doesnt draw
+remember table view columns
+
+P3:
+
+
+// PUNT
+examples
+check for leaks
+performance
+
+ER: new first item
+drag and drop to text
+level indicator is clickable
+improve text import
+BUG: get rid of search field pop-up menu	*?
+swap columns crashes
+drop image on item
+ER: option-drag copies
+window and table position autosaving
+ER: up/down arrows
+keyboard nav
+View -> Sort By menu						*?
+"formatting error" if empty
+
+
+// version 3.0
+iTunes-style all-in-one window
+tri-directional
+Spotlight support
+printing
+export to iPod
+file sharing
+built-in audio editing
+setAutosavingDelay
