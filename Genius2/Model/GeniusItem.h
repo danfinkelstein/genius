@@ -1,59 +1,69 @@
+//  Genius
 //
-//  GeniusItem.h
-//  Genius2
-//
-//  Created by John R Chang on 2005-09-23.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import <CoreData/CoreData.h>
-
-#import "GeniusAtom.h"
-#import "GeniusAssociation.h"
+#import <Cocoa/Cocoa.h>
 
 
+// In table column order
+extern NSString * GeniusItemIsEnabledKey;
 extern NSString * GeniusItemAtomAKey;
 extern NSString * GeniusItemAtomBKey;
-
-extern NSString * GeniusItemIsEnabledKey;
 extern NSString * GeniusItemMyGroupKey;
 extern NSString * GeniusItemMyTypeKey;
-extern NSString * GeniusItemMyNotesKey;
 extern NSString * GeniusItemMyRatingKey;
+extern NSString * GeniusItemDisplayGradeKey;
 extern NSString * GeniusItemLastTestedDateKey;
 extern NSString * GeniusItemLastModifiedDateKey;
 
+extern NSString * GeniusItemMyNotesKey;
 
-@interface GeniusItem :  NSManagedObject <NSCopying>
+
+@class GeniusAssociation;
+
+@interface GeniusItem :  NSManagedObject
 {
-	NSString * _displayGrade;
+	GeniusAssociation * _associationAB;
+	GeniusAssociation * _associationBA;
 }
-
-- (GeniusAssociation *) associationAB;
-- (GeniusAssociation *) associationBA;
-
-
-- (void) touchLastModifiedDate;
-- (void) touchLastTestedDate;
-
-- (NSString *) displayGrade;
-
-
-- (void) swapAtoms;
 
 - (BOOL) usesDefaultTextAttributes;
 - (void) clearTextAttributes;
 
-- (void) resetAssociations;
+- (void) swapAtoms;
 
-- (void) flushCache;
+@end
+
+
+@interface GeniusItem (ScoreKeeping)
+
+- (GeniusAssociation *) associationAB;
+- (GeniusAssociation *) associationBA;
+
+- (void) resetAssociations;
+- (BOOL) isAssociationsReset;
+
+- (float) grade;
+- (NSString *) displayGrade;
+- (NSImage *) gradeIcon;
 
 @end
 
 
 @interface GeniusItem (TextImportExport)
 
++ (NSArray *) keyPathOrderForTextRepresentation;
+
 - (NSString *) tabularText;
 + (NSString *) tabularTextFromItems:(NSArray *)items;
 
++ (NSArray *) itemsFromTabularText:(NSString *)string order:(NSArray *)keyPaths;
+- (id) initWithTabularText:(NSString *)line order:(NSArray *)keyPaths;
+
 @end
+
+
+// for GeniusDocument
+extern NSString * GeniusItemScoreHasChangedNotification;

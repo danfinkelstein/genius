@@ -1,27 +1,21 @@
-/* GeniusTableView */
+//  Genius
+//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import <Cocoa/Cocoa.h>
 
+#import "CustomizableTableView.h"
 
-@interface GeniusTableView : NSTableView
+
+@interface GeniusTableView : CustomizableTableView
 {
-	NSMutableArray * _allTableColumns;
-	NSMenu * _columnsMenu;
 }
-
-- (NSMenu *) dynamicColumnsMenu;
-
-- (NSDictionary *)configurationDictionary;
-- (void)setConfigurationFromDictionary:(NSDictionary *)configDict;
 
 @end
 
 
 @interface NSObject (GeniusTableViewDelegate)
-
-- (NSArray *)tableViewDefaultHiddenTableColumnIdentifiers:(NSTableView *)aTableView;
-- (void) tableView:(NSTableView *)aTableView didHideTableColumn:(NSTableColumn *)tableColumn;
-- (void) tableView:(NSTableView *)aTableView didShowTableColumn:(NSTableColumn *)tableColumn;
 
 - (BOOL) performKeyDown:(NSEvent *)theEvent;
 - (BOOL) performKeyEquivalent:(NSEvent *)theEvent;

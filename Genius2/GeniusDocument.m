@@ -1,8 +1,7 @@
-//  GeniusDocument.m
-//  Genius2
+//  Genius
 //
-//  Created by John R Chang on 2005-07-02.
-//  Copyright __MyCompanyName__ 2005 . All rights reserved.
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "GeniusDocument.h"
 
@@ -25,8 +24,12 @@
 
 const int kGeniusDocumentAtomAColumnIndex = 1;
 
+static NSString * GeniusDocumentOverallPercentKey = @"overallPercent";
+static NSString * GeniusDocumentCorrectCountABKey = @"correctCountAB";
+static NSString * GeniusDocumentCorrectCountBAKey = @"correctCountBA";
+
 @interface GeniusDocument (Private)
-- (void) _handleUserDefaultsDidChange:(NSNotification *)aNotification;
+- (void) touchOverallPercent;
 @end
 
 
@@ -37,6 +40,10 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
     self = [super init];
     if (self != nil) {
         // initialization code
+
+
+		NSNotificationCenter * nc = [NSNotificationCenter defaultCenter];
+		[nc addObserver:self selector:@selector(_itemScoreHasChangedNotification:) name:GeniusItemScoreHasChangedNotification object:nil];
     }
 	
     return self;
@@ -69,25 +76,21 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 
 /* Hook up object controllers */
 	[itemArrayController setManagedObjectContext:[self managedObjectContext]];
-	[documentInfoController setContent:[self documentInfo]];
 
 /* Window */	
 	// Set up toolbar
 	[(GeniusWindowController *)windowController setupToolbarWithLevelIndicator:levelIndicator searchField:searchField];
-	// [[searchField cell] setMenu:nil];
+	//[[searchField cell] setSearchMenuTemplate:nil];
 
 /* Table View */	
-	[(GeniusWindowController *)windowController setupTableView:tableView withHeaderViewMenu:tableColumnMenu];
+	[(GeniusWindowController *)windowController setupTableView:tableView];
 
-	NSDictionary * configDict = [[self documentInfo] tableViewConfigurationDictionary];	
-	[(GeniusTableView *)tableView setConfigurationFromDictionary:configDict];
-
-	// Configure list font size
-	NSNotificationCenter * nc = [NSNotificationCenter defaultCenter];
-	[nc addObserver:self selector:@selector(_handleUserDefaultsDidChange:) name:NSUserDefaultsDidChangeNotification object:nil];
-	[self _handleUserDefaultsDidChange:nil];
+	NSDictionary * configDict = [[self documentInfo] tableViewConfigurationDictionary];
+	if (configDict)
+		[(GeniusTableView *)tableView setConfigurationFromDictionary:configDict];
 
 	// Set up handler to automatically make new item if user presses Return in last row
+	NSNotificationCenter * nc = [NSNotificationCenter defaultCenter];
 	[nc addObserver:self selector:@selector(_handleTextDidEndEditing:) name:NSTextDidEndEditingNotification object:nil];
 
 	// Set up drag-and-drop
@@ -111,56 +114,37 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 }
 
 - (void)dealloc
-{
-	//NSLog(@"-[GeniusDocument dealloc]");
+{	
+	NSLog(@"dealloc");
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+	[_documentInfo release];
+	
 	[super dealloc];
 }
 
 
-// Get rid of CoreData's Binary/SQL/XML popup
-- (BOOL)prepareSavePanel:(NSSavePanel *)savePanel
-{
-	[savePanel setAccessoryView:nil];
-	return YES;
-}
-
-
-- (NSWindow *) mainWindow
+- (NSWindowController *) windowController
 {
 	NSArray * windowControllers = [self windowControllers];
 	if ([windowControllers count] == 0)
 		return nil;
-	return [[windowControllers objectAtIndex:0] window];
+	return [windowControllers objectAtIndex:0];
+}
+
+- (NSWindow *) window
+{
+	return [[self windowController] window];
 }
 
 
 - (void) _dismissFieldEditor
 {
-	NSWindow * window = [self mainWindow];
+	NSWindow * window = [self window];
 	if ([window makeFirstResponder:window] == NO)
 		[window endEditingFor:nil];
 }
 
-
-- (void) _handleUserDefaultsDidChange:(NSNotification *)aNotification
-{
-	[self _dismissFieldEditor];
-	
-	NSUserDefaults * ud = [NSUserDefaults standardUserDefaults];
-
-	// Handle font size
-	int mode = [ud integerForKey:GeniusPreferencesListTextSizeModeKey];
-	float fontSize = [GeniusWindowController listTextFontSizeForSizeMode:mode];
-
-	float rowHeight = [GeniusWindowController rowHeightForSizeMode:mode];
-	[tableView setRowHeight:rowHeight];
-
-	NSEnumerator * tableColumnEnumerator = [[tableView tableColumns] objectEnumerator];
-	NSTableColumn * tableColumn;
-	while ((tableColumn = [tableColumnEnumerator nextObject]))
-		[[tableColumn dataCell] setFont:[NSFont systemFontOfSize:fontSize]];
-}
 
 // Make new item if user presses Return in last row
 - (void) _handleTextDidEndEditing:(NSNotification *)aNotification
@@ -178,6 +162,8 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 			}
 		}
 	}
+	
+	[atomATextView display];
 }
 
 - (void) _tableViewDoubleAction:(id)sender
@@ -185,7 +171,8 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 	if ([sender clickedRow] == -1 || [sender clickedColumn] == -1)
 		return;
 
-	[self showRichTextEditor:sender];
+	if ([sender clickedColumn] == 1 || [sender clickedColumn] == 2)
+		[(GeniusWindowController *)[self windowController] showRichTextEditor:sender];
 
 	// Select all in the appropriate text view
 /*	NSTextView * textView;
@@ -193,7 +180,7 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 		textView = atomATextView;
 	else if ([sender clickedColumn] == 2)	// XXX
 		textView = atomBTextView;
-	[[self mainWindow] makeFirstResponder:textView];
+	[[self window] makeFirstResponder:textView];
 	[textView selectAll:sender];*/
 }
 
@@ -250,39 +237,65 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 
 - (GeniusDocumentInfo *) documentInfo
 {
-	GeniusDocumentInfo * documentInfo = nil;
-		
-	// Attempt to fetch pre-existing documentInfo
-	NSFetchRequest * request = [[[NSFetchRequest alloc] init] autorelease];
-	NSManagedObjectContext * context = [self managedObjectContext];
-	NSEntityDescription * entity = [NSEntityDescription entityForName:@"GeniusDocumentInfo" inManagedObjectContext:context];
-	[request setEntity:entity];
-	NSError * error = nil;
-	NSArray * array = [context executeFetchRequest:request error:&error];
-	if (array)
-	{
-		int count = [array count]; // may be 0
-		if (count == 1)
-			documentInfo = [array objectAtIndex:0];
-	}
+	if (_documentInfo == nil)
+	{			
+		// Attempt to fetch pre-existing documentInfo
+		NSFetchRequest * request = [[[NSFetchRequest alloc] init] autorelease];
+		NSManagedObjectContext * context = [self managedObjectContext];
+		NSEntityDescription * entity = [NSEntityDescription entityForName:@"GeniusDocumentInfo" inManagedObjectContext:context];
+		[request setEntity:entity];
+		NSError * error = nil;
+		NSArray * array = [context executeFetchRequest:request error:&error];
+		if (array)
+		{
+			int count = [array count]; // may be 0
+			if (count == 1)
+				_documentInfo = [[array objectAtIndex:0] retain];
+		}
 
-	// Otherwise create new documentInfo
-	if (documentInfo == nil)
-		documentInfo = [NSEntityDescription insertNewObjectForEntityForName:@"GeniusDocumentInfo" inManagedObjectContext:context];
+		// Otherwise create new documentInfo
+		if (_documentInfo == nil)
+		{
+			_documentInfo = [[NSEntityDescription insertNewObjectForEntityForName:@"GeniusDocumentInfo" inManagedObjectContext:context] retain];
+		}
+	}
 	
-	return documentInfo;
+	return _documentInfo;
 }
 
-@end
 
-
-@implementation GeniusDocument (NSWindowDelegate)
-
-/*- (void)windowDidResignKey:(NSNotification *)aNotification
+- (float) overallPercent
 {
-	if ([[NSApp keyWindow] isKindOfClass:[NSPanel class]])
-		[self _dismissFieldEditor];
-}*/
+	float sum = 0.0;
+	NSArray * arrangedObjects = [itemArrayController arrangedObjects];
+	NSEnumerator * itemEnumerator = [arrangedObjects objectEnumerator];
+	GeniusItem * item;
+	while ((item = [itemEnumerator nextObject]))
+	{
+		float grade = [item grade];
+		if (grade != -1.0)
+			sum += grade;
+	}
+
+	return sum / [arrangedObjects count] * 100.0;
+}
+
+- (void) touchOverallPercent
+{
+	[self willChangeValueForKey:GeniusDocumentOverallPercentKey];
+	[self didChangeValueForKey:GeniusDocumentOverallPercentKey];
+}
+
+- (void) setOverallPercent:(float)value
+{
+	[self touchOverallPercent];
+	// do nothing
+}
+
+- (void) _itemScoreHasChangedNotification:(NSNotification *)notification
+{
+	[self touchOverallPercent];
+}
 
 @end
 
@@ -343,7 +356,7 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 
         string = [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
-        NSArray * items = [GeniusItem itemsFromTabularText:string];
+        NSArray * items = [GeniusItem itemsFromTabularText:string order:[GeniusItem keyPathOrderForTextRepresentation]];
         //[self setFilterString:@""];
         [itemArrayController addObjects:items];
     }
@@ -360,19 +373,10 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex
 {
     NSString * identifier = [aTableColumn identifier];
-    if ([identifier isEqualToString:@"grade"])
+    if ([identifier isEqualToString:GeniusItemDisplayGradeKey])
     {
         GeniusItem * item = [[itemArrayController arrangedObjects] objectAtIndex:rowIndex];		
-        float grade = [[item valueForKey:@"grade"] floatValue];
-
-        NSImage * image = nil;
-        if (grade == -1)
-            image = [NSImage imageNamed:@"status-red"];
-        else if (grade < 0.9)
-            image = [NSImage imageNamed:@"status-yellow"];
-        else
-            image = [NSImage imageNamed:@"status-green"];
-		
+		NSImage * image = [item gradeIcon];
         [aCell setImage:image];
     }
 }
@@ -380,11 +384,12 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 @end
 
 
-@implementation GeniusDocument (GeniusTableViewDelegate)
+@implementation GeniusDocument (CustomizableTableViewDelegate)
 
-- (NSArray *)tableViewDefaultHiddenTableColumnIdentifiers:(NSTableView *)aTableView
+- (NSArray *)tableViewDefaultTableColumnIdentifiers:(NSTableView *)aTableView
 {
-	return [NSArray arrayWithObjects:GeniusItemMyGroupKey, GeniusItemMyTypeKey, GeniusItemLastTestedDateKey, GeniusItemLastModifiedDateKey, nil];
+	return [NSArray arrayWithObjects:GeniusItemIsEnabledKey, GeniusItemAtomAKey, GeniusItemAtomBKey,
+		GeniusDocumentCorrectCountABKey, GeniusItemDisplayGradeKey, nil];
 }
 
 - (void) tableView:(NSTableView *)aTableView didHideTableColumn:(NSTableColumn *)tableColumn
@@ -404,6 +409,25 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 	[[tableColumn dataCell] setFont:[NSFont systemFontOfSize:fontSize]];
 }
 
+
+- (BOOL) tableView:(NSTableView *)aTableView shouldChangeHeaderTitleOfTableColumn:(NSTableColumn *)aTableColumn
+{
+	NSString * identifier = [aTableColumn identifier];
+	if ([identifier isEqual:GeniusItemAtomAKey] || [identifier isEqual:GeniusItemAtomBKey])
+		return YES;
+	return NO;
+}
+
+- (void) tableView:(NSTableView *)aTableView didChangeHeaderTitleOfTableColumn:(NSTableColumn *)aTableColumn
+{
+	NSDictionary * configDict = [(GeniusTableView *)aTableView configurationDictionary];
+	[[self documentInfo] setTableViewConfigurationDictionary:configDict];	
+}
+
+@end
+
+
+@implementation GeniusDocument (GeniusTableViewDelegate)
 
 - (BOOL)performKeyDown:(NSEvent *)theEvent
 {	
@@ -482,20 +506,22 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 	else if ([menuItem action] == @selector(makePlainText:))
 	{
 		NSArray * selectedObjects = [itemArrayController selectedObjects];
-		if ([selectedObjects count] == 0)
-			return NO;
-			
 		NSEnumerator * objectEnumerator = [selectedObjects objectEnumerator];
 		GeniusItem * item;
 		while ((item = [objectEnumerator nextObject]))
 			if ([item usesDefaultTextAttributes] == NO)
-				return YES;
-		
+				return YES;		
 		return NO;
 	}
 	else if ([menuItem action] == @selector(resetItemScore:))
 	{
-		return [itemArrayController selectionIndex] != NSNotFound;
+		NSArray * selectedObjects = [itemArrayController selectedObjects];
+		NSEnumerator * objectEnumerator = [selectedObjects objectEnumerator];
+		GeniusItem * item;
+		while ((item = [objectEnumerator nextObject]))
+			if ([item isAssociationsReset] == NO)
+				return YES;		
+		return NO;
 	}
 	// Study menu
 	else if ([menuItem action] == @selector(setQuizDirectionModeAction:))
@@ -570,21 +596,6 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 }
 
 
-// View menu
-
-- (IBAction) showRichTextEditor:(id)sender
-{
-	NSView * bottomView = [[splitView subviews] objectAtIndex:1];
-	int i;
-	for (i=0; i<4; i++)
-	{
-		[bottomView setFrameSize:NSMakeSize([splitView frame].size.width, 128.0)];
-		[splitView adjustSubviews];
-		[splitView displayIfNeeded];
-	}
-}
-
-
 // Item menu
 
 - (IBAction) newItem:(id)sender
@@ -595,7 +606,7 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 	[itemArrayController addObject:newObject];
 
 	// Auto-select first text field
-	if ([[self mainWindow] isKeyWindow])
+	if ([[self window] isKeyWindow])
 	{
 		int rowIndex = [[itemArrayController arrangedObjects] indexOfObject:newObject];
 		[tableView editColumn:kGeniusDocumentAtomAColumnIndex row:rowIndex withEvent:nil select:YES];
@@ -631,7 +642,7 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 
 	NSAlert * alert = [NSAlert alertWithMessageText:messageText defaultButton:defaultButtonTitle
 		alternateButton:alternateButtonTitle otherButton:nil informativeTextWithFormat:informativeText];
-	[alert beginSheetModalForWindow:[self mainWindow] modalDelegate:self didEndSelector:@selector(_makePlainTextAlertDidEnd:returnCode:contextInfo:) contextInfo:nil];
+	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(_makePlainTextAlertDidEnd:returnCode:contextInfo:) contextInfo:nil];
 }
 
 - (void)_makePlainTextAlertDidEnd:(NSAlert *)alert returnCode:(int)returnCode contextInfo:(void *)contextInfo;
@@ -662,13 +673,19 @@ const int kGeniusDocumentAtomAColumnIndex = 1;
 {
 	int tag = [sender tag];
 	[[self documentInfo] setQuizDirectionMode:tag];
-	
-	NSArray * arrangedObjects = [itemArrayController arrangedObjects];
-	NSEnumerator * objectEnumerator = [arrangedObjects objectEnumerator];
-	GeniusItem * item;
-	while ((item = [objectEnumerator nextObject]))
-		[item flushCache];
-	
+
+	if (tag == GeniusQuizBidirectionalMode)
+	{
+		NSTableColumn * tableColumn = [tableView tableColumnWithIdentifier:GeniusDocumentCorrectCountBAKey];
+		int index = [[tableView toggleColumnsMenu] indexOfItemWithRepresentedObject:tableColumn];
+		if (index != NSNotFound)
+		{
+			NSMenuItem * menuItem = [[tableView toggleColumnsMenu] itemAtIndex:index];
+			if ([menuItem state] == NSOffState)
+				[tableView toggleTableColumnShown:menuItem];
+		}
+	}
+
 	[tableView reloadData];
 }
 

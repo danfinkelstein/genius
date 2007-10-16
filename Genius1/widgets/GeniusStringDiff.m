@@ -1,10 +1,19 @@
-//
-//  GeniusStringDiff.m
-//  test
-//
-//  Created by John R Chang on 2004-12-01.
-//  Copyright 2004 __MyCompanyName__. All rights reserved.
-//
+/*
+	Genius
+	Copyright (C) 2003-2006 John R Chang
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.	
+
+	http://www.gnu.org/licenses/gpl.txt
+*/
 
 #import "GeniusStringDiff.h"
 
@@ -55,8 +64,8 @@
 	// Create temp files
 	NSMutableString * text1 = [string1 mutableCopy];
 	NSMutableString * text2 = [string2 mutableCopy];
-	[text1 replaceOccurrencesOfString:@" " withString:@"\n" options:NULL range:NSMakeRange(0, [text1 length])];
-	[text2 replaceOccurrencesOfString:@" " withString:@"\n" options:NULL range:NSMakeRange(0, [text2 length])];
+	[text1 replaceOccurrencesOfString:@" " withString:@"\n" options:0L range:NSMakeRange(0, [text1 length])];
+	[text2 replaceOccurrencesOfString:@" " withString:@"\n" options:0L range:NSMakeRange(0, [text2 length])];
 	[text1 appendString:@"\n"];
 	[text2 appendString:@"\n"];
 	NSData * data1 = [text1 dataUsingEncoding:NSUTF8StringEncoding];

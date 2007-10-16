@@ -1,10 +1,7 @@
+//  Genius
 //
-//  GeniusValueTransformers.m
-//  Genius2
-//
-//  Created by John R Chang on 2005-09-26.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "GeniusValueTransformers.h"
 
@@ -81,6 +78,54 @@
 		return nil;
 	
 	return ([value boolValue] ? [NSColor blackColor] : [NSColor grayColor]);
+}
+
+@end
+
+
+@implementation GeniusBooleanToStringTransformer
+
++ (Class) transformedValueClass
+{
+	return [NSString self];
+}
+
++ (BOOL) allowsReverseTransformation
+{
+	return NO;
+}
+
+- (id) transformedValue:(id)value
+{
+	if (value == nil)
+		return nil;
+	
+	return ([value boolValue] ? NSLocalizedString(@"YES", nil) : NSLocalizedString(@"NO", nil));
+}
+
+@end
+
+
+@implementation GeniusFloatValueTransformer
+
++ (Class) transformedValueClass
+{
+	return [NSNumber self];
+}
+
++ (BOOL) allowsReverseTransformation
+{
+	return NO;
+}
+
+- (id) transformedValue:(id)value
+{
+	if (value == nil)
+		return nil;
+	float x = [value floatValue];
+	if (x == -1.0)
+		return @"--";
+	return [NSNumber numberWithFloat:x];
 }
 
 @end

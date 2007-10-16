@@ -13,10 +13,14 @@
                 setItemImportance = id; 
                 showInfo = id; 
                 showNotes = id; 
+                showPreferences = id; 
+                showSupportSite = id; 
+                showWebSite = id; 
                 swapFields = id; 
                 toggleABScoreColumn = id; 
                 toggleBAScoreColumn = id; 
                 toggleGroupColumn = id; 
+                toggleSoundEffects = id; 
                 toggleTypeColumn = id; 
             }; 
             CLASS = FirstResponder; 
@@ -24,7 +28,7 @@
             SUPERCLASS = NSObject; 
         }, 
         {
-            ACTIONS = {showAboutPanel = id; showHelpWindow = id; showTipJar = id; }; 
+            ACTIONS = {openTipJarSite = id; showAboutPanel = id; showHelpWindow = id; }; 
             CLASS = GeniusAppDelegate; 
             LANGUAGE = ObjC; 
             SUPERCLASS = NSObject; 

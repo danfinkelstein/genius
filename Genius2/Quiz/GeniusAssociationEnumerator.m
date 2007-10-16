@@ -1,10 +1,7 @@
+//  Genius
 //
-//  GeniusAssociationEnumerator.m
-//  Genius2
-//
-//  Created by John R Chang on 2005-10-10.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "GeniusAssociationEnumerator.h"
 
@@ -67,9 +64,9 @@
 
 - (void) _rescheduleCurrentAssociation	// XXX: does this belong here or GeniusAssociation ?
 {
-    unsigned int deltaSec = [GeniusAssociationDataPoint timeIntervalForScore:1];
-	if ([_currentAssociation lastDataPointValue] == YES)
-		deltaSec = [GeniusAssociationDataPoint timeIntervalForScore:[_currentAssociation resultCount]];
+    unsigned int deltaSec = [GeniusAssociationDataPoint timeIntervalForCount:1];
+	if ([[_currentAssociation lastDataPoint] value] >= 0.5)
+		deltaSec = [GeniusAssociationDataPoint timeIntervalForCount:[_currentAssociation resultCount]];
 	
     NSDate * dueDate = [[NSDate date] addTimeInterval:deltaSec];
     [_currentAssociation setValue:dueDate forKey:GeniusAssociationDueDateKey];

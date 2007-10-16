@@ -1,229 +1,201 @@
-// 
-//  GeniusAssociation.m
-//  Genius2
+//  Genius
 //
-//  Created by John R Chang on 2005-09-24.
-//  Copyright 2005 __MyCompanyName__. All rights reserved.
-//
+//  This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.
+//  http://creativecommons.org/licenses/by-nc-sa/2.5/
 
 #import "GeniusAssociation.h"
 
-#import "GeniusItem.h"	// -touchLastTestedDate
 #import "GeniusAssociationDataPoint.h"
+#import "GeniusItem.h"	// GeniusItemLastTestedDateKey
 
-
-NSString * GeniusAssociationSourceAtomKey = @"sourceAtom";
-NSString * GeniusAssociationTargetAtomKey = @"targetAtom";
-
-static NSString * GeniusAssociationParentItemKey = @"parentItem";
 
 NSString * GeniusAssociationDueDateKey = @"dueDate";
 NSString * GeniusAssociationDataPointArrayDataKey = @"dataPointArrayData";
-NSString * GeniusAssociationLastDataPointDateKey = @"lastDataPointDate";	// why is this persistent?
-NSString * GeniusAssociationPredictedScoreKey = @"predictedScore";
+NSString * GeniusAssociationHandicapKey = @"handicap";
 
+static NSString * GeniusAssociationDataPointsKey = @"dataPoints";
+static NSString * GeniusAssociationCorrectCountKey = @"correctCount";
+NSString * GeniusAssociationPredictedValueKey = @"predictedValue";
 
-@interface GeniusAssociation (Private)
-
-- (void) _recacheResultsArray;
-
-- (void) _recalculatePredictedScore;
-- (void) _recalculateLastDataPointDate;
-
-@end
+NSString * GeniusAssociationParentItemKey = @"parentItem";
+NSString * GeniusAssociationSourceAtomKey = @"sourceAtom";
+NSString * GeniusAssociationTargetAtomKey = @"targetAtom";
 
 
 @implementation GeniusAssociation
 
-#pragma mark <NSCopying>
-
-+ (NSArray *)copyKeys {
-    static NSArray *copyKeys = nil;
-    if (copyKeys == nil) {
-        copyKeys = [[NSArray alloc] initWithObjects:
-            GeniusAssociationSourceAtomKey, GeniusAssociationTargetAtomKey,
-			GeniusAssociationDueDateKey, GeniusAssociationDataPointArrayDataKey, 
-			GeniusAssociationLastDataPointDateKey, GeniusAssociationPredictedScoreKey, nil];
-    }
-    return copyKeys;
-}
-
-- (NSDictionary *)dictionaryRepresentation
++ (void)initialize
 {
-    return [self dictionaryWithValuesForKeys:[[self class] copyKeys]];
+    [self setKeys:[NSArray arrayWithObjects:GeniusAssociationDataPointsKey, GeniusAssociationHandicapKey,nil]
+		triggerChangeNotificationsForDependentKey:GeniusAssociationCorrectCountKey];
+    [self setKeys:[NSArray arrayWithObjects:GeniusAssociationDataPointsKey, GeniusAssociationHandicapKey,nil]
+		triggerChangeNotificationsForDependentKey:GeniusAssociationPredictedValueKey];
 }
-
-- (id)copyWithZone:(NSZone *)zone
-{
-	NSManagedObjectContext * context = [self managedObjectContext];
-	GeniusAtom * newObject = [[[self class] allocWithZone:zone] initWithEntity:[self entity] insertIntoManagedObjectContext:context];
-	[newObject setValuesForKeysWithDictionary:[self dictionaryRepresentation]];
-    return newObject;
-}
-
-
-#pragma mark -
-
-- (void) commonAwake
-{
-	_dataPoints = nil;
-	[self _recacheResultsArray];
-}
-
-- (void)awakeFromInsert
-{
-	[super awakeFromInsert];
-	[self commonAwake];
-}
-
-- (void)awakeFromFetch
-{
-	[super awakeFromFetch];
-	[self commonAwake];
-}
-
-- (void) didTurnIntoFault
-{
-	// Remove observers	
-	[_dataPoints release];
-
-    [super didTurnIntoFault];
-}
-
-
-- (void)didChangeValueForKey:(NSString *)key
-{
-	if ([key isEqualToString:GeniusAssociationDataPointArrayDataKey])
-	{
-		[self _recacheResultsArray];
-
-		[self _recalculatePredictedScore];
-		[self _recalculateLastDataPointDate];
-
-		GeniusItem * item = [self valueForKey:GeniusAssociationParentItemKey];
-		[item touchLastTestedDate];
-	}
-	
-	[super didChangeValueForKey:key];
-}
-
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-    if ([keyPath isEqual:GeniusAssociationDataPointArrayDataKey])
-	{
-		[self _recacheResultsArray];
-
-		[self _recalculatePredictedScore];
-		[self _recalculateLastDataPointDate];
-	}
-}
-
-
-- (void) _setDataPointsArray:(NSArray *)resultDicts
-{
-	[_dataPoints release];
-    _dataPoints = [resultDicts retain];
-
-    NSData * data = nil;
-	if (resultDicts)
-		data = [NSArchiver archivedDataWithRootObject:resultDicts];
-    [self willChangeValueForKey:GeniusAssociationDataPointArrayDataKey];
-    [self setPrimitiveValue:data forKey:GeniusAssociationDataPointArrayDataKey];
-    [self didChangeValueForKey:GeniusAssociationDataPointArrayDataKey];
-}
-
-- (void) _recacheResultsArray
-{
-	[_dataPoints release];
-
-    [self willAccessValueForKey:GeniusAssociationDataPointArrayDataKey];
-    NSData * data = [self primitiveValueForKey:GeniusAssociationDataPointArrayDataKey];	// persistent
-    [self didAccessValueForKey:GeniusAssociationDataPointArrayDataKey];
-	if (data == nil)
-		return;
-    _dataPoints = [[NSUnarchiver unarchiveObjectWithData:data] retain];
-}
-
-
-- (void) _recalculatePredictedScore
-{
-	int n = [_dataPoints count];
-	if (n == 0)
-	{
-		[self setPrimitiveValue:nil forKey:GeniusAssociationPredictedScoreKey];	// persistent
-		return;
-	}
-	
-	float predictedScore = [GeniusAssociationDataPoint predictedGradeWithDataPoints:_dataPoints];
-	[self setPrimitiveValue:[NSNumber numberWithFloat:predictedScore] forKey:GeniusAssociationPredictedScoreKey];	// persistent
-}
-
-- (void) _recalculateLastDataPointDate
-{
-	GeniusAssociationDataPoint * dataPoint = [_dataPoints lastObject];	// persistent
-	NSDate * lastDate = [dataPoint date];
-	[self setValue:lastDate forKey:GeniusAssociationLastDataPointDateKey];
-}
-
-
-#pragma mark -
-
-// for QuizController
 
 - (GeniusAtom *) sourceAtom
 {
-	return [self primitiveValueForKey:GeniusAssociationSourceAtomKey];
+	[self willAccessValueForKey:GeniusAssociationSourceAtomKey];
+	id result = [self primitiveValueForKey:GeniusAssociationSourceAtomKey];
+	[self didAccessValueForKey:GeniusAssociationSourceAtomKey];
+	return result;
 }
 
 - (GeniusAtom *) targetAtom
 {
-	return [self primitiveValueForKey:GeniusAssociationTargetAtomKey];
+	[self willAccessValueForKey:GeniusAssociationTargetAtomKey];
+	id result = [self primitiveValueForKey:GeniusAssociationTargetAtomKey];
+	[self didAccessValueForKey:GeniusAssociationTargetAtomKey];
+	return result;
 }
 
+@end
 
-#pragma mark -
 
-- (BOOL) lastDataPointValue
+@implementation GeniusAssociation (Results)
+
+- (NSArray *) dataPoints
 {
-	GeniusAssociationDataPoint * dataPoint = [_dataPoints lastObject];
-	if (dataPoint == nil)
-		return NO;
-	return ([dataPoint value] >= 0.5);
+	[self willAccessValueForKey:GeniusAssociationDataPointsKey];
+	NSArray * dataPoints = nil; 
+    NSData * data = [self valueForKey:GeniusAssociationDataPointArrayDataKey];	// persistent
+	if (data)
+		dataPoints = [NSUnarchiver unarchiveObjectWithData:data];	
+	[self didAccessValueForKey:GeniusAssociationDataPointsKey];
+	return dataPoints;
 }
 
-- (unsigned int) resultCount
+- (void) setDataPoints:(NSArray *)dataPoints
 {
-	return [_dataPoints count];
+	[self willChangeValueForKey:GeniusAssociationDataPointsKey];
+    NSData * data = nil;
+	if (dataPoints)
+		data = [NSArchiver archivedDataWithRootObject:dataPoints];
+    [self setValue:data forKey:GeniusAssociationDataPointArrayDataKey];	
+	[self didChangeValueForKey:GeniusAssociationDataPointsKey];
+
+	NSNotificationCenter * nc = [NSNotificationCenter defaultCenter];
+	[nc postNotificationName:GeniusItemScoreHasChangedNotification object:[self valueForKey:GeniusAssociationParentItemKey]];
 }
+
+
+- (unsigned int) correctCount
+{
+	[self willAccessValueForKey:GeniusAssociationCorrectCountKey];
+	
+	unsigned int correctCount = 0;
+	NSArray * dataPoints = [self dataPoints];
+	NSEnumerator * dataPointEnumerator = [dataPoints objectEnumerator];
+	GeniusAssociationDataPoint * dataPoint;
+	while ((dataPoint = [dataPointEnumerator nextObject]))
+		if ([dataPoint value] == YES)
+			correctCount++;
+			
+	NSNumber * handicapNumber = [self valueForKey:GeniusAssociationHandicapKey];
+	correctCount += [handicapNumber unsignedIntValue];
+
+	[self didAccessValueForKey:GeniusAssociationCorrectCountKey];
+	
+	return correctCount;
+}
+
+- (void) setCorrectCount:(NSNumber *)countNumber
+{
+	int count = [countNumber intValue];
+	if (count < 0)
+		count = 0;
+		
+	[self willChangeValueForKey:GeniusAssociationCorrectCountKey];
+	
+	unsigned int oldCount = [[self dataPoints] count];
+	int delta = count - oldCount;
+	if (delta <= 0)
+	{
+		[self setDataPoints:nil];
+		[self setValue:[NSNumber numberWithUnsignedInt:count] forKey:GeniusAssociationHandicapKey];
+	}
+	else if (delta > 0)
+	{
+		[self setValue:[NSNumber numberWithUnsignedInt:delta] forKey:GeniusAssociationHandicapKey];
+	}
+	
+	[self didChangeValueForKey:GeniusAssociationCorrectCountKey];
+
+	NSNotificationCenter * nc = [NSNotificationCenter defaultCenter];
+	[nc postNotificationName:GeniusItemScoreHasChangedNotification object:[self valueForKey:GeniusAssociationParentItemKey]];
+}
+
 
 - (void) addResult:(BOOL)value
 {
 	// update dataPointArrayData
 	NSDate * nowDate = [NSDate date];
 	GeniusAssociationDataPoint * dataPoint = [[GeniusAssociationDataPoint alloc] initWithDate:nowDate value:(float)value];
-	[self _setDataPointsArray:[_dataPoints arrayByAddingObject:dataPoint]];
+
+	NSArray * dataPoints = [self dataPoints];
+	NSArray * tmpDataPoints = [dataPoints arrayByAddingObject:dataPoint];
+	[self setDataPoints:tmpDataPoints];
 	
 	// dueDate is updated in -[GeniusAssociationEnumerator _rescheduleCurrentAssociation]
 	
 	// update derived values
-	[self _recalculatePredictedScore];
-	[self setValue:nowDate forKey:GeniusAssociationLastDataPointDateKey];
-
+/*	[self _recalculatePredictedScore];
+	[self setValue:nowDate forKey:GeniusAssociationLastDataPointDateKey];*/
+	
+	GeniusItem * parentItem = [self valueForKey:GeniusAssociationParentItemKey];
+	[parentItem setValue:[NSDate date] forKey:GeniusItemLastTestedDateKey];
 }
+
+
++ (float) _handicapToPercentValue:(unsigned int)handicap
+{
+	float result = handicap * 0.2;
+	return MIN(result, 1.0);
+}
+
+- (float) predictedValue
+{
+	[self willAccessValueForKey:GeniusAssociationPredictedValueKey];
+
+	NSArray * dataPoints = [self dataPoints];
+	float result = [GeniusAssociationDataPoint predictedValueWithDataPoints:dataPoints];
+	unsigned int handicap = [[self valueForKey:GeniusAssociationHandicapKey] unsignedIntValue];
+	if (result == -1.0 && handicap > 0)
+		result = 0.0;
+	result += [GeniusAssociation _handicapToPercentValue:handicap];
+	
+	[self willAccessValueForKey:GeniusAssociationPredictedValueKey];
+
+	if (result == -1.0)
+		return -1.0;
+	return MIN(result, 1.0);
+}
+
+
+- (unsigned int) resultCount
+{
+	NSArray * dataPoints = [self dataPoints];
+	return [dataPoints count];
+}
+
+- (GeniusAssociationDataPoint *) lastDataPoint
+{
+	NSArray * dataPoints = [self dataPoints];
+	return [dataPoints lastObject];
+}
+
 
 - (void) reset
 {
     [self setValue:nil forKey:GeniusAssociationDataPointArrayDataKey];	// persistent
 	[self setValue:nil forKey:GeniusAssociationDueDateKey];			// persistent
 
-	[self setPrimitiveValue:nil forKey:GeniusAssociationPredictedScoreKey];	// persistent, derived
-    [self setValue:nil forKey:GeniusAssociationLastDataPointDateKey];	// persistent, derived
+/*	[self setPrimitiveValue:nil forKey:GeniusAssociationPredictedScoreKey];	// persistent, derived
+    [self setValue:nil forKey:GeniusAssociationLastDataPointDateKey];	// persistent, derived */
 }
 
 - (BOOL) isReset
 {
-	return ([self valueForKey:GeniusAssociationLastDataPointDateKey] == nil
+	return ([self valueForKey:GeniusAssociationDataPointArrayDataKey] == nil
 		&& [self valueForKey:GeniusAssociationDueDateKey] == nil);
 }
 
