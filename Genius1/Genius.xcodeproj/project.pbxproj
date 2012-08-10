@@ -589,7 +589,11 @@
 			isa = PBXProject;
 			buildConfigurationList = 23D0AFE80AA1C7F50069E6D3 /* Build configuration list for PBXProject "Genius" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* Genius */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -895,6 +899,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CFLAGS = (
 					"-D",
 					"DEBUG=1",
@@ -902,6 +907,7 @@
 				OTHER_LDFLAGS = "";
 				"Optimization level" = 0;
 				PRODUCT_NAME = Genius;
+				SDKROOT = macosx10.7;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -915,6 +921,8 @@
 		23D0AFE60AA1C7F50069E6D3 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -936,8 +944,10 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = Genius;
+				SDKROOT = macosx10.7;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = (
 					"-Wmost",
@@ -956,7 +966,7 @@
 				DOXY_HOME = /opt/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = macosx10.7;
 				SVNREV = development;
 				ZERO_LINK = NO;
 			};
@@ -965,16 +975,14 @@
 		23D0AFEA0AA1C7F50069E6D3 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				BUNDLE_ID = com.mac.jrc.Genius;
 				DOCSET_INSTALL = "$(HOME)/Library/Developer/Shared/Documentation/DocSets";
 				DOXY_HOME = /opt/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = macosx10.7;
 				SVNREV = 228;
 			};
 			name = Deployment;
@@ -1003,6 +1011,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = JRSwizzle;
+				SDKROOT = macosx10.7;
 				ZERO_LINK = YES;
 			};
 			name = Development;
@@ -1010,6 +1019,8 @@
 		833C268F0D2D32850097E3CE /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				COPY_PHASE_STRIP = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -1029,6 +1040,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = JRSwizzle;
+				SDKROOT = macosx10.7;
 				ZERO_LINK = NO;
 			};
 			name = Deployment;
@@ -1060,6 +1072,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Testing;
+				SDKROOT = macosx10.7;
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
@@ -1069,6 +1082,8 @@
 		83CC1CD90CD2499C0002FFA8 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Genius.app/Contents/MacOS/Genius";
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1091,6 +1106,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Testing;
+				SDKROOT = macosx10.7;
 				TEST_HOST = "$(BUNDLE_LOADER)";
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
@@ -1105,16 +1121,20 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = DiskImage;
+				SDKROOT = macosx10.7;
 			};
 			name = Development;
 		};
 		83D9BE710CD110F30092858D /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				PRODUCT_NAME = DiskImage;
+				SDKROOT = macosx10.7;
 				ZERO_LINK = NO;
 			};
 			name = Deployment;
@@ -1127,16 +1147,20 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = DeveloperDocs;
+				SDKROOT = macosx10.7;
 			};
 			name = Development;
 		};
 		83D9C97B0CD8AC9C003B422F /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				PRODUCT_NAME = DeveloperDocs;
+				SDKROOT = macosx10.7;
 				ZERO_LINK = NO;
 			};
 			name = Deployment;
