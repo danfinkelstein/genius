@@ -46,7 +46,7 @@
 			<object class="NSWindowTemplate" id="120643575">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{20, 500}, {480, 473}}</string>
+				<string key="NSWindowRect">{{20, 273}, {480, 473}}</string>
 				<int key="NSWTFlags">1886912512</int>
 				<string key="NSWindowTitle">Genius</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -411,10 +411,9 @@
 				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
 			</object>
 			<object class="NSView" id="313733051">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">256</int>
 				<string key="NSFrameSize">{125, 1}</string>
-				<reference key="NSSuperview"/>
 			</object>
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">

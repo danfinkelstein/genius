@@ -38,7 +38,7 @@
 			<object class="NSWindowTemplate" id="531926999">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{398, 483}, {480, 480}}</string>
+				<string key="NSWindowRect">{{398, 266}, {480, 480}}</string>
 				<int key="NSWTFlags">1886912512</int>
 				<string key="NSWindowTitle">Genius Help</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -64,6 +64,8 @@
 											<int key="NSvFlags">2322</int>
 											<string key="NSFrameSize">{463, 478}</string>
 											<reference key="NSSuperview" ref="933091191"/>
+											<reference key="NSWindow"/>
+											<reference key="NSNextKeyView" ref="453179264"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="779900918">
 												<object class="NSLayoutManager" key="NSLayoutManager">
 													<object class="NSTextStorage" key="NSTextStorage">
@@ -83,7 +85,7 @@
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
-												<int key="NSFlags">11117</int>
+												<int key="NSFlags">10605</int>
 												<int key="NSTextCheckingTypes">0</int>
 												<nil key="NSMarkedAttributes"/>
 												<object class="NSColor" key="NSBackgroundColor" id="13369610">
@@ -129,6 +131,7 @@
 									</array>
 									<string key="NSFrame">{{1, 1}, {463, 478}}</string>
 									<reference key="NSSuperview" ref="374746848"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="154192796"/>
 									<reference key="NSDocView" ref="154192796"/>
 									<reference key="NSBGColor" ref="13369610"/>
@@ -292,6 +295,7 @@ wGw</bytes>
 									<int key="NSvFlags">256</int>
 									<string key="NSFrame">{{464, 1}, {15, 478}}</string>
 									<reference key="NSSuperview" ref="374746848"/>
+									<reference key="NSWindow"/>
 									<reference key="NSTarget" ref="374746848"/>
 									<string key="NSAction">_doScroller:</string>
 									<double key="NSCurValue">1</double>
@@ -301,6 +305,8 @@ wGw</bytes>
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{-100, -100}, {87, 18}}</string>
 									<reference key="NSSuperview" ref="374746848"/>
+									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView" ref="933091191"/>
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="374746848"/>
 									<string key="NSAction">_doScroller:</string>
@@ -310,6 +316,7 @@ wGw</bytes>
 							</array>
 							<string key="NSFrameSize">{480, 480}</string>
 							<reference key="NSSuperview" ref="527887352"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="933091191"/>
 							<int key="NSsFlags">133138</int>
 							<reference key="NSVScroller" ref="225709129"/>
@@ -319,6 +326,8 @@ wGw</bytes>
 					</array>
 					<string key="NSFrameSize">{480, 480}</string>
 					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
+					<reference key="NSNextKeyView" ref="374746848"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1366, 746}}</string>
 				<string key="NSMinSize">{213, 129}</string>
@@ -432,7 +441,29 @@ wGw</bytes>
 			<nil key="sourceID"/>
 			<int key="maxID">18</int>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes"/>
+		<object class="IBClassDescriber" key="IBDocument.Classes">
+			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
+				<object class="IBPartialClassDescription">
+					<string key="className">GeniusHelpWindowController</string>
+					<string key="superclassName">NSWindowController</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">textView</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">textView</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">textView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/GeniusHelpWindowController.h</string>
+					</object>
+				</object>
+			</array>
+		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
