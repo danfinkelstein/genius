@@ -21,6 +21,7 @@
 #import "GeniusAssociation.h"
 #import "GeniusDocument.h"
 #import "GSTableView.h"
+#import <Foundation/Foundation.h>
 
 //! Methods related to reading and writing genius files.
 /*!
@@ -92,7 +93,8 @@
 			NSString * message = NSLocalizedString(@"Please upgrade Genius to a newer version.", nil);
 			NSString * cancelTitle = NSLocalizedString(@"Cancel", nil);
 		
-            NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:cancelTitle alternateButton:nil otherButton:nil informativeTextWithFormat:message];
+            //NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:cancelTitle alternateButton:nil otherButton:nil informativeTextWithFormat:message];
+            NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:cancelTitle alternateButton:nil otherButton:nil informativeTextWithFormat:@"%@",message];
             [alert runModal];
             result = NO;
         }
@@ -203,7 +205,7 @@ Assuming this is okay, it simply passes the call to super.
 		NSString * cancelTitle = NSLocalizedString(@"Cancel", nil);
 		NSString * saveTitle = NSLocalizedString(@"Save", nil); 
         
-        NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:cancelTitle alternateButton:saveTitle otherButton:nil informativeTextWithFormat:message];
+        NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:cancelTitle alternateButton:saveTitle otherButton:nil informativeTextWithFormat:@"%@",message];
         int result = [alert runModal];
         if (result != NSAlertAlternateReturn) // not NSAlertSecondButtonReturn?
             return;
@@ -224,18 +226,24 @@ Assuming this is okay, it simply passes the call to super.
     
     NSWindowController * windowController = [[self windowControllers] lastObject];
     [savePanel beginSheetForDirectory:nil file:nil modalForWindow:[windowController window] modalDelegate:self didEndSelector:@selector(_exportFileDidEnd:returnCode:contextInfo:) contextInfo:nil];
+    //Replace with:  [savePanel beginSheetModalForWindow:<#(NSWindow *)#> completionHandler:<#^(NSInteger result)handler#>];
+    //Replacement uses completionHandler.  Figure out what that is and how to use it.
 }
 
 //! Handles user response to modal sheet initiated in exportFile:.
 - (void)_exportFileDidEnd:(NSSavePanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
-    NSString * path = [sheet filename];
+    NSString * path = [[sheet URL] absoluteString];
+    //Or should that be NSString * path = [[sheet fileURL] absoluteString]; ?
     if (path == nil)
         return;
 
-    //! @todo Consider adding headers to the exported file.    
+    //! @todo Consider adding headers to the exported file.
+    NSStringEncoding *enc = NULL;
+    NSError *error = error;
     NSString * string = [GeniusPair tabularTextFromPairs:_pairs order:[GeniusDocument columnBindings]];
-    [string writeToFile:path atomically:NO];
+    //[string writeToFile:path atomically:NO encoding:*enc error:error];
+    [string writeToFile:path atomically:NO encoding:*enc error:&error];
 }
 
 //! Support for loading delimited files.
@@ -243,7 +251,12 @@ Assuming this is okay, it simply passes the call to super.
     By default looks for files with .txt ending.  Relies on GeniusPair for convering the delimited
     text into an array of GeniusPair instances.
 */
-+ (IBAction)importFile:(id)sender
+//+ (IBAction)importFile:(id)sender;
+//I changed this to:
+//- (IBAction)importFile:(id)sender;
+//But then some other file couldn't find the class version.
+//Does it have to be an (IBAction)?  Can it be a void instead?  Let's try that....
++ (void)importFile:(id)sender
 {
     NSDocumentController * documentController = [NSDocumentController sharedDocumentController];
     NSOpenPanel * openPanel = [NSOpenPanel openPanel];
@@ -252,11 +265,14 @@ Assuming this is okay, it simply passes the call to super.
 
     [documentController runModalOpenPanel:openPanel forTypes:[NSArray arrayWithObject:@"txt"]];
 
-    NSString * path = [openPanel filename];
+    NSString * path = [[openPanel URL] absoluteString];
+    //or should that be [openPanel fileURL]?
     if (path == nil)
         return;
     
-    NSString * text = [NSString stringWithContentsOfFile:path];
+    NSError *error=error;
+    NSString * text = [NSString stringWithContentsOfFile:path usedEncoding:nil error:&error];
+    //That line used to be NSString * text = [NSString stringWithContentsOfFile:path];
     if (text == nil)
         return;
     

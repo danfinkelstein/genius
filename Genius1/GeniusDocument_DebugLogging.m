@@ -6,6 +6,7 @@
 //  Copyright 2008 Chris Miner. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
 #import "GeniusDocument_DebugLogging.h"
 #import <JRSwizzle/JRSwizzle.h>
 
@@ -63,7 +64,7 @@
             break;
     }
     
-    NSLog(@"_cmd: %s change: %@", _cmd, changeString);
+    NSLog(@"_cmd: %@ change: %@", NSStringFromSelector(_cmd), changeString);
     [self log_updateChangeCount:change];    
 }
 
@@ -81,21 +82,21 @@
 //! logs referenced call to referenced method executes it
 - (void) log_insertObject:(GeniusPair*) pair inPairsAtIndex:(int)index
 {
-    NSLog(@"_cmd: %s", _cmd);
+    NSLog(@"_cmd: %@", NSStringFromSelector(_cmd));
     [self log_insertObject:pair inPairsAtIndex:index];
 }
 
 //! logs referenced call to referenced method executes it
 - (void) log_removeObjectFromPairsAtIndex:(int) index
 {
-    NSLog(@"_cmd: %s", _cmd);
+    NSLog(@"_cmd: %@", NSStringFromSelector(_cmd));
     [self log_removeObjectFromPairsAtIndex:index];    
 }
 
 //! logs referenced call to referenced method executes it
 - (void) log_setPairs: (NSMutableArray*) values
 {
-    NSLog(@"_cmd: %s", _cmd);
+    NSLog(@"_cmd: %@", NSStringFromSelector(_cmd));
     return [self log_setPairs:values];
 }
 

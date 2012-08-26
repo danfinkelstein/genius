@@ -7,6 +7,7 @@
 //
 
 #import "GeniusDocument.h"
+#import <Foundation/Foundation.h>
 
 @interface GeniusDocument(DebugLogging)
 

@@ -26,6 +26,11 @@
 - (BOOL)loadDataRepresentation:(NSData *)data ofType:(NSString *)aType;
 
 - (IBAction)exportFile:(id)sender;
-+ (IBAction)importFile:(id)sender;
+//+ (IBAction)importFile:(id)sender;
+//I changed this to:
+//- (IBAction)importFile:(id)sender;
+//But then some other file couldn't find the class version.
+//Does it have to be an (IBAction)?  Can it be a void instead?  Let's try that....
++ (void)importFile:(id)sender;
 
 @end

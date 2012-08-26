@@ -120,7 +120,7 @@ The implementation chops @a string1 and @a string2 into words based on the space
     }
     else
     {
-        
+        NSError *error=error;
         NSMutableData * diffData = [NSMutableData data];
         NSData *inData = nil;
         while ((inData = [readHandle availableData]) && [inData length])
@@ -129,8 +129,18 @@ The implementation chops @a string1 and @a string2 into words based on the space
                 
         // Delete temp files
         NSFileManager * fm = [NSFileManager defaultManager];
-        [fm removeFileAtPath:path1 handler:nil];
-        [fm removeFileAtPath:path2 handler:nil];
+        /*
+        NSURL *bundle1 = [[NSBundle mainBundle] bundleURL];
+        NSString *path1String = [NSString stringWithFormat:@"%@",path1];
+        NSURL *path1URL = [NSURL URLWithString:path1String relativeToURL: bundle1];
+        NSURL *bundle2 = [[NSBundle mainBundle] bundleURL];
+        NSString *path2String = [NSString stringWithFormat:@"%@",path2];
+        NSURL *path2URL = [NSURL URLWithString:path2String relativeToURL: bundle2];
+         */
+        [fm removeItemAtPath:path1 error:&error];
+        [fm removeItemAtPath:path2 error:&error];
+        //[fm removeFileAtPath:path1 handler:nil];
+        //[fm removeFileAtPath:path2 handler:nil];
         
         [diffTask release];
         return [diffOutput autorelease];

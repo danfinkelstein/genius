@@ -16,6 +16,8 @@
 	http://www.gnu.org/licenses/gpl.txt
 */
 
+#import <Foundation/Foundation.h>
+
 #import "GeniusDocument.h"
 #import "GeniusDocument_DebugLogging.h"
 
@@ -595,7 +597,7 @@ static NSArray *columnBindings;
 	NSString * resetTitle = NSLocalizedString(@"Reset", nil); 
 	NSString * cancelTitle = NSLocalizedString(@"Cancel", nil);
 
-    NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:resetTitle alternateButton:cancelTitle otherButton:nil informativeTextWithFormat:message];
+    NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:resetTitle alternateButton:cancelTitle otherButton:nil informativeTextWithFormat:@"%@",message];
     NSButton * defaultButton = [[alert buttons] objectAtIndex:0];
     [defaultButton setKeyEquivalent:@"\r"];
     
@@ -667,7 +669,7 @@ static NSArray *columnBindings;
 		NSString * message = NSLocalizedString(@"Make sure the items you want to study are enabled, or add more items.", nil);
 		NSString * okTitle = NSLocalizedString(@"OK", nil);
 
-        NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:okTitle alternateButton:nil otherButton:nil informativeTextWithFormat:message];
+        NSAlert * alert = [NSAlert alertWithMessageText:title defaultButton:okTitle alternateButton:nil otherButton:nil informativeTextWithFormat:@"%@",message];
         NSButton * defaultButton = [[alert buttons] objectAtIndex:0];
         [defaultButton setKeyEquivalent:@"\r"];
         
@@ -755,7 +757,8 @@ static NSArray *columnBindings;
 /*!
     Handles updates of table colum toggles, auto pick quiz mode, setting of importance, duplication, and reseting.
 */
-- (BOOL)validateMenuItem:(id <NSMenuItem>)menuItem
+//- (BOOL)validateMenuItem:(id <NSMenuItem>)menuItem
+-(BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     SEL action = [menuItem action];
     

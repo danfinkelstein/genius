@@ -16,6 +16,7 @@
 	http://www.gnu.org/licenses/gpl.txt
 */
 
+#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
 @class GeniusPreferencesController;

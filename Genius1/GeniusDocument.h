@@ -17,13 +17,14 @@
 */
 
 #import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 @class GeniusArrayController;
 @class GeniusPair;
 @class GSTableView;
 
 //! Standard NSDocument subclass for controlling interaction between UI and GeniusPair list.
-@interface GeniusDocument : NSDocument
+@interface GeniusDocument : NSDocument <NSTableViewDelegate>
 {
     IBOutlet GSTableView *tableView;                    //!< The main table showing the GeniusPair items.
     IBOutlet GeniusArrayController *arrayController;    //!< The controller holding the displayed items.

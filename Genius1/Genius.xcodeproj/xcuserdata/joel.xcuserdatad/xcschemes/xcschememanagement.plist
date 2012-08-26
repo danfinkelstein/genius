@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SchemeUserState</key>
+	<dict>
+		<key>DeveloperDocs.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
+		<key>DiskImage.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+		<key>Genius.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>0</integer>
+		</dict>
+		<key>GeniusJoelWhatTheHell.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
+		<key>JRSwizzle.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>833C268A0D2D32850097E3CE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>83CC1CD40CD2499B0002FFA8</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>83D9BE670CD110E90092858D</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>83D9C9780CD8AC7D003B422F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>8D15AC270486D014006FF6A4</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>

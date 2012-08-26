@@ -16,6 +16,7 @@
 	http://www.gnu.org/licenses/gpl.txt
 */
 
+#import <Foundation/Foundation.h>
 #import "GeniusPair.h"
 #import "GeniusAssociation.h"
 #import "GeniusItem.h"
@@ -37,7 +38,7 @@ const int kGeniusPairMaximumImportance = 10;
 //! Relates two GeniusAssociation instances and some meta info.
 /*!
 A GeniusPair is conceptually like a two sided index card.  Through its two instances
- of GeniusAssociation it has access two two GeniusItem intances.  One for the 'front' of
+ of GeniusAssociation it has access two two GeniusItem instances.  One for the 'front' of
  the card and one for the 'back'.  In addition a GeniusPair maintains information about
  the users classification of the card, such as importance, group, type, and notes.
  */
@@ -48,7 +49,11 @@ A GeniusPair is conceptually like a two sided index card.  Through its two insta
 {
     if(self == [GeniusPair class])
     {
-        [self setKeys:[NSArray arrayWithObjects:@"disabled", nil] triggerChangeNotificationsForDependentKey:@"importance"];
+        NSSet *JoelGPC = [[NSSet alloc] initWithObjects:@"disabled", nil];
+        [JoelGPC keyPathsForValuesAffectingValueForKey:@"importance"];
+        //WHAT DOES THE ERROR IN THE ABOVE LINE MEAN?
+        //Does it have anything to do with this in the docs?:  You must not override this method when you add a computed property to an existing class using a category, overriding methods in categories is unsupported. In that case, implement a matching +keyPathsForValuesAffecting<Key> to take advantage of this mechanism.
+        //[self setKeys:[NSArray arrayWithObjects:@"disabled", nil] triggerChangeNotificationsForDependentKey:@"importance"];
     }
 }
 

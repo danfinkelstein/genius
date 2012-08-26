@@ -16,6 +16,7 @@
 	http://www.gnu.org/licenses/gpl.txt
 */
 
+#import <Foundation/Foundation.h>
 #import "GeniusAppDelegate.h"
 
 #import "GeniusHelpWindowController.h"
@@ -107,6 +108,7 @@
 - (IBAction)importFile:(id)sender
 {
     [GeniusDocument importFile:sender];
+    //I converted +(IBAction)importFile:sender to -(IBAction)importFile:sender somewhere else....Where?
 }
 
 @end
@@ -143,7 +145,13 @@
     NSArray * documents = [dc documents];
     if (doc && [documents count] == 1 && [[doc pairs] count] == 0 && [doc isDocumentEdited] == NO)
     {
-        BOOL succeed = [doc readFromFile:filename ofType:@"Genius Document"];
+        NSError *error=error;
+        NSURL * bundle = [[NSBundle mainBundle] bundleURL];
+        NSURL * file = [NSURL URLWithString:@"..filename" relativeToURL:bundle];
+        NSURL * absoluteFile = [file absoluteURL];
+
+        BOOL succeed = [doc readFromURL:absoluteFile ofType:@"Genius Document" error:&error];
+        //That used to be just:  BOOL succeed = [doc readFromFile:filename ofType:@"Genius Document"];
         if (!succeed)
             return NO;
 
@@ -154,6 +162,17 @@
     {
         doc = [dc openDocumentWithContentsOfFile:filename display:YES];
         return (doc != nil);
+        /*
+         Tried to make this:
+         NSError *error=error;
+         NSURL * bundle = [[NSBundle mainBundle] bundleURL];
+         NSURL * file = [NSURL URLWithString:@"..filename" relativeToURL:bundle]; //should that be @"../Data/filename"?
+         NSURL * absoluteFile = [file absoluteURL];
+         doc = [dc openDocumentWithContentsOfURL:absoluteFile display:YES completionHandler:nil];
+         //"nil" above used to be ^(NSDocument *document, BOOL documentWasAlreadyOpen, NSError *error)     }
+         return (doc != nil);
+         But produces an error--probably have to figure out what to use for completionHandler.  Or WTF completionHandler is.
+         */
     }
 }
 
@@ -166,7 +185,7 @@
 	NSDocument * document;
 	while ((document = [documentEnumerator nextObject]))
 	{
-		NSString * path = [document fileName];
+		NSString * path = [[document fileURL] absoluteString];
 		if (path)
 			[documentPaths addObject:path];
 	}

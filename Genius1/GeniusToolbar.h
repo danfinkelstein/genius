@@ -20,7 +20,7 @@
 
 #import "GeniusDocument.h"
 
-@interface GeniusDocument (Toolbar)
+@interface GeniusDocument (Toolbar) <NSToolbarDelegate>
 
 - (void) setupToolbarForWindow:(NSWindow *)window;
 

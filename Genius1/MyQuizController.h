@@ -16,6 +16,7 @@
 	http://www.gnu.org/licenses/gpl.txt
 */
 
+#import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 
 @class GeniusItem;
@@ -24,7 +25,7 @@
 @class GeniusAssociation;
 
 //! Standard NSWindowController subclass for managing a user quiz.
-@interface MyQuizController : NSWindowController
+@interface MyQuizController : NSWindowController <NSAnimationDelegate>
 {
     IBOutlet NSObjectController *associationController;  //!< NSObjectController for #_currentAssociation.
     IBOutlet NSTextField *cueTextView;                    //!< Displays the cue item of #_currentAssociation.

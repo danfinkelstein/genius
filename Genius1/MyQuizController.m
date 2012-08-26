@@ -16,6 +16,7 @@
 	http://www.gnu.org/licenses/gpl.txt
 */
 
+#import <Foundation/Foundation.h>
 #import "MyQuizController.h"
 #import "GeniusWelcomePanel.h"
 #import "NSString+Similiarity.h"
